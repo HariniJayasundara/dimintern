@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Create Student Account</title>
+    <style>
+body {
+  font-family: Arial, sans-serif;
+  background-color: #f2f2f2;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+main {
+  flex: 1;
+}
+
+.container {
+  max-width: 500px;
+  margin: 0 auto;
+  background-color: #ffffff;
+  padding: 20px;
+  border-radius: 5px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+h2 {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.form-group {
+  margin-bottom: 20px;
+}
+
+label {
+  display: block;
+  margin-bottom: 5px;
+  font-weight: bold;
+}
+
+.required::after {
+  content: "*";
+  color: red;
+}
+
+input[type="text"],
+input[type="number"],
+select,
+textarea {
+  width: 100%;
+  padding: 10px;
+  border-radius: 5px;
+  border: 1px solid #ccc;
+  box-sizing: border-box;
+  font-size: 14px;
+}
+
+textarea {
+  height: 80px;
+}
+
+button[type="submit"] {
+  padding: 10px 20px;
+  background-color: #03a68d;
+  border: none;
+  color: white;
+  font-size: 16px;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+button[type="submit"]:hover {
+  background-color: #0789a3;
+}
+
+.clear-button {
+  padding: 10px 20px;
+  background-color: #6d6e6d;
+  border: none;
+  color: white;
+  font-size: 16px;
+  border-radius: 5px;
+  cursor: pointer;
+  float: left;
+  margin-right: 270px;
+}
+
+.clear-button:hover {
+  background-color: #444544;
+}
+
+footer {
+  background-color: #03a68d;
+  color: white;
+  text-align: center;
+  padding: 20px;
+  margin: 0px;
+}
+
+.footer-content {
+  font-size: 14px;
+}
+
+    </style>
+    <script>
+
+    function clearForm() {
+        document.getElementById("student_number").value = "";
+        document.getElementById("name_with_initials").value = "";
+        document.getElementById("preferred_name").value = "";
+        document.getElementById("specialization").value = "";
+        document.getElementById("current_gpa").value = "";
+        document.getElementById("email").value = "";
+        document.getElementById("phone_number").value = "";
+        document.getElementById("qualifications").value = "";
+        document.getElementById("special_achievements").value = "";
+        document.getElementById("extra_curricular_activities").value = "";
+        document.getElementById("linkedin_account").value = "";
+    }
+
+    function validateForm() {
+        var student_number = document.forms["createStuAccountForm"]["student_number"].value;
+        var name_with_initials = document.forms["createStuAccountForm"]["name_with_initials"].value;
+        var preferred_name = document.forms["createStuAccountForm"]["preferred_name"].value;
+        var specialization = document.forms["createStuAccountForm"]["specialization"].value;
+        var current_gpa = document.forms["createStuAccountForm"]["current_gpa"].value;
+        var email = document.forms["createStuAccountForm"]["email"].value;
+        var phone_number = document.forms["createStuAccountForm"]["phone_number"].value;
+        var password = document.forms["createStuAccountForm"]["password"].value;
+        var confirmPassword = document.forms["createStuAccountForm"]["confirmPassword"].value;
+        var qualifications = document.forms["createStuAccountForm"]["qualifications"].value;
+        var achievements = document.forms["createStuAccountForm"]["special_achievements"].value;
+        var extra_curricular_activities = document.forms["createStuAccountForm"]["extra_curricular_activities"].value;
+        var linkedin_account = document.forms["createStuAccountForm"]["linkedin_account"].value;
+
+
+        // Validation logic for mandatory fields
+        if (student_number === "" || name_with_initials === "" || preferred_name === "" || specialization === "" || current_gpa === "" || email === "" || phone_number === "") {
+            alert("All mandatory fields must be filled out.");
+            return false;
+        }
+
+        // Validation logic for student number format
+        var studentNumberPattern = /^IM\/20\d{2}\/\d{3}$/;
+        if (!studentNumberPattern.test(student_number)) {
+            alert("Please enter a valid student number in the format IM/20xx/xxx.");
+            return false;
+        }
+
+        // Validation logic for specialization selection
+        var validSpecializations = ["IT", "IS", "BSE", "OSCM"];
+        if (!validSpecializations.includes(specialization)) {
+            alert("Please select a valid specialization.");
+            return false;
+        }
+
+        // Validation logic for GPA format
+        var gpaPattern = /^\d+(\.\d{1,4})?$/;
+        if (!gpaPattern.test(current_gpa)) {
+            alert("Please enter a valid GPA (numeric up to 4 decimal points).");
+            return false;
+        }
+
+        // Validation logic for email format
+        var emailPattern = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/;
+        if (!emailPattern.test(email)) {
+            alert("Please enter a valid email address.");
+            return false;
+        }
+
+        // Validation logic for phone number format
+        var phonePattern = /^\d{10}$/;
+        if (!phonePattern.test(phone_number)) {
+            alert("Please enter a valid phone number with 10 digits.");
+            return false;
+        }
+
+        // Validate if passwords match
+        if (password !== confirmPassword){
+            alert("Passwords do not match");
+            return false;
+        }
+
+        // If all client side validations pass
+        return true;
+    }
+</script>
+
+</head>
+<body>
+    <div class="container">
+        <h2>Create Account</h2>
+        <form name="createStuAccountForm" method="POST" action="create_stu_account.php" onsubmit="return validateForm()">
+            <div class="form-group">
+                <label for="student_number">Student Number:<span class="required"></span></label>
+                <input type="text" id="student_number" name="student_number" required>
+            </div>
+
+            <div class="form-group">
+                <label for="name_with_initials">Name with Initials:<span class="required"></span></label>
+                <input type="text" id="name_with_initials" name="name_with_initials" required>
+            </div>
+
+            <div class="form-group">
+                <label for="preferred_name">Preferred Name:<span class="required"></span></label>
+                <input type="text" id="preferred_name" name="preferred_name" required>
+            </div>
+
+            <div class="form-group">
+                <label for="email">Email:<span class="required"></span></label>
+                <input type="email" id="email" name="email" required>
+            </div>
+
+            <div class="form-group">
+                <label for="phone_number">Phone Number:<span class="required"></span></label>
+                <input type="tel" id="phone_number" name="phone_number" required>
+            </div>
+
+            <div class="form-group">
+                <label for="password">Password:<span class="required"></span></label>
+                <input type="password" id="password" name="password" required><br>
+            </div>
+
+            <div class="form-group">
+                <label for="confirmPassword">Confirm Password:<span class="required"></span></label>
+                <input type="password" id="confirmPassword" name="confirmPassword" required><br>
+            </div>
+
+            <div class="form-group">
+                <label for="specialization">Specialization:<span class="required"></span></label>
+                <select id="specialization" name="specialization" required>
+                    <option value="">Select Specialization</option>
+                    <option value="IT">IT</option>
+                    <option value="IS">IS</option>
+                    <option value="BSE">BSE</option>
+                    <option value="OSCM">OSCM</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="current_gpa">Current GPA:<span class="required"></span></label>
+                <input type="number" id="current_gpa" name="current_gpa" step="0.0001" min="0" max="4" required>
+            </div>
+            <div class="form-group">
+                <label for="qualifications">Educational Qualifications:</label>
+                <textarea id="qualifications" name="qualifications"></textarea>
+            </div>
+            <div class="form-group">
+                <label for="special_achievements">Special Achievements:</label>
+                <textarea id="special_achievements" name="special_achievements"></textarea>
+            </div>
+
+            <div class="form-group">
+                <label for="extra_curricular_activities">Extra-curricular Activities:</label>
+                <textarea id="extra_curricular_activities" name="extra_curricular_activities"></textarea>
+            </div>
+            <div class="form-group">
+                <label for="linkedin_account">LinkedIn Account:</label>
+                <input type="text" id="linkedin_account" name="linkedin_account">
+            </div>
+            <div class="form-group">
+                <button type="button" class="clear-button" onclick="clearForm()">Clear</button>
+                <button type="submit" value="Create Account">Create Account</button>
+            </div>
+
+        </form>
+        <br>
+    </div>
+
+        <footer>
+                <div class="footer-content">
+                    Department of Industrial Management - Faculty of Science - University of Kelaniya
+                </div>
+        </footer>
+
+</body>
+</html>

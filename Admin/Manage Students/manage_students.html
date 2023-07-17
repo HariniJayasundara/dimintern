@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Admin Panel</title>
+
+    <style type="text/css">
+        html, body {
+            font-family: Arial, sans-serif;
+            background-color: #f5f5f5;
+            height: 100%;
+        }
+
+        .container {
+            display: flex;
+            flex-direction: column;
+            min-height: 100%;
+        }
+
+        .content {
+            flex: 1 0 auto;
+            margin-top: 20px;
+        }
+
+        /*.container {
+            margin-top: 20px;
+        }*/
+
+        table {
+            width: 80%;
+            border-collapse: collapse;
+            align-self: center;
+        }
+
+        th, td {
+            padding: 8px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+
+        th {
+            background-color: #f2f2f2;
+        }
+
+        button.edit {
+        padding: 5px 10px;
+        background-color: #03a68d;
+        color: white;
+        border: none;
+        cursor: pointer;
+        }
+
+        button.edit:hover {
+        background-color: #028672;
+        }
+
+        button.delete {
+        padding: 5px 10px;
+        background-color: #b45156;
+        color: white;
+        border: none;
+        cursor: pointer;
+        }
+
+        button.delete:hover {
+        background-color: #953b42;
+        }
+
+
+        .selected {
+            background-color: #fc8890;
+        }
+
+        footer {
+        background-color: #03a68d;
+        color: white;
+        text-align: center;
+        padding: 20px;
+        width: 100%;
+        position: fixed;
+        bottom: 0;
+        }
+
+        .footer-content {
+        font-size: 14px;
+        }
+
+
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>Admin: Manage Student Details</h1>
+        <table id="student-table">
+            <thead>
+                <tr>
+                    <th>Student Number</th>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Student details will be dynamically added here -->
+            </tbody>
+        </table>
+        <br>
+    </div>
+
+    <footer>
+        <div class="footer-content">
+            Department of Industrial Management - Faculty of Science - University of Kelaniya
+        </div>
+    </footer>
+
+
+    <script>
+        window.onload = function () {
+            fetch('get_students.php')
+                .then(response => response.json())
+                .then(data => {
+                    const studentTable = document.getElementById('student-table');
+                    const tbody = studentTable.querySelector('tbody');
+
+                    data.forEach(student => {
+                        const row = document.createElement('tr');
+                        row.innerHTML = `
+                            <td>${student.student_number}</td>
+                            <td>${student.name_with_initials}</td>
+                            <td>${student.email}</td>
+                            <td>
+                                <button class ="edit" onclick="editStudent('${student.student_number}')">Edit</button>
+                                <button class ="delete" onclick="deleteStudent('${student.student_number}')">Delete</button>
+                            </td>
+                        `;
+                        tbody.appendChild(row);
+                    });
+
+                    // Add event listener to table rows
+                    const rows = tbody.querySelectorAll('tr');
+                    rows.forEach(row => {
+                        row.addEventListener('click', () => {
+                            // Reset background color for all rows
+                            rows.forEach(r => {
+                                r.classList.remove('selected');
+                            });
+                            // Highlight the selected row
+                            row.classList.add('selected');
+                        });
+                    });
+                });
+        };
+
+        function editStudent(studentNumber) {
+            // Redirect to the edit_student page with the student number as a parameter
+            window.location.href = `edit_student.php?studentNumber=${studentNumber}`;
+        }
+
+        function deleteStudent(studentNumber) {
+            const selectedRow = document.querySelector('.selected');
+            if (selectedRow) {
+                const studentNumberCell = selectedRow.querySelector('td:nth-child(1)');
+                const selectedStudentNumber = studentNumberCell.textContent;
+
+                // Display confirmation dialog
+                const confirmDelete = confirm('Are you sure you want to delete this student account?');
+                if (confirmDelete) {
+                    // Perform delete operation
+                    fetch('delete_student.php', {
+                        method: 'POST',
+                        body: JSON.stringify({ studentNumber: selectedStudentNumber }),
+                        headers: {
+                            'Content-Type': 'application/json'
+                        }
+                    })
+                        .then(response => response.json())
+                        .then(data => {
+                            // Handle response from the server
+                            if (data.success) {
+                                // Student account deleted successfully
+                                selectedRow.remove();
+                                alert('Student account deleted successfully.');
+                            } else {
+                                // Failed to delete student account
+                                alert('Failed to delete student account.');
+                            }
+                        })
+                        .catch(error => {
+                            console.log(error);
+                            alert('An error occurred while deleting the student account.');
+                        });
+                }
+            } else {
+                alert('Please select a student to delete.');
+            }
+        }
+
+    </script>
+
+</body>
+
+</html>
