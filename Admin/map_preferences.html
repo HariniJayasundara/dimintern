@@ -3,9 +3,50 @@
 <head>
     <title>Matching Preferences</title>
     <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f2f2f2;
+            margin: 0;
+            padding: 0;
+        }
+        h1 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        h2 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        button {
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            border: none;
+            color: white;
+            font-size: 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input[type="text"] {
+            width: 100%;
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            box-sizing: border-box;
+            font-size: 14px;
+        }
         table {
             border-collapse: collapse;
             width: 100%;
+            margin-bottom: 20px;
         }
         th, td {
             text-align: left;
@@ -22,15 +63,17 @@
         }
     </style>
 </head>
-<body>
-    <h1>Matching Preferences</h1>
+<body onload="loadAllMatches()"> <!-- Call the loadAllMatches function when the page loads -->
 
+
+    <h1>Matching Preferences</h1>
     <button id="matchButton" onclick="matchPreferences()">Match Preferences</button>
     <button id="resetButton" onclick="resetPreferences()">Reset Preferences</button>
 
     <label for="filterInput">Filter Preferences:</label>
     <input type="text" id="filterInput" placeholder="Enter Filter">
     <button onclick="applyFilter()">Apply Filter</button>
+    <button onclick="removeFilter()">Remove Filter</button>
 
 
     <h2>Matched Preferences</h2>
@@ -43,6 +86,14 @@
     </table>
 
     <script>
+        // Add a new function to load all existing matches when the page loads
+        function loadAllMatches() {
+            // Clear the filter input field
+            document.getElementById('filterInput').value = '';
+            // Retrieve all matches
+            retrieveMatchedPreferences();
+        }
+
         function matchPreferences() {
     // Get the filter value from the input field
     var filterValue = document.getElementById('filterInput').value;
@@ -61,21 +112,6 @@
     xhr.open('GET', 'map_preferences.php', true);
     xhr.send();
 }
-/*function matchPreferences() {
-            // Send an AJAX request to the server to enable matching preferences
-            var xhr = new XMLHttpRequest();
-            xhr.onreadystatechange = function() {
-                if (xhr.readyState === 4 && xhr.status === 200) {
-                    // Matching preferences successful
-                    retrieveMatchedPreferences();
-                } else if (xhr.readyState === 4) {
-                    // Matching preferences failed
-                    alert('Failed to match preferences. Please try again.');
-                }
-            };
-            xhr.open('GET', 'map_preferences.php', true);
-            xhr.send();
-        }*/
 
         function retrieveMatchedPreferences(filterValue) {
             // Send an AJAX request to retrieve the matched preferences
@@ -125,32 +161,6 @@
     }
 
 
-      /*  function displayMatchedPreferences(matchedPreferences) {
-    var table = document.getElementById('matchedTable');
-    table.innerHTML = '';
-
-    // Create table header
-    var headerRow = document.createElement('tr');
-    headerRow.innerHTML = '<th>Preference ID</th><th>Company ID</th><th>Student Number</th>';
-    table.appendChild(headerRow);
-
-    // Iterate through matched preferences and add rows to the table
-    matchedPreferences.forEach(function (matchedPreference) {
-        var row = document.createElement('tr');
-        row.innerHTML = '<td title="' + matchedPreference.preference_name + '">' + matchedPreference.preference_id + '</td>' +
-            '<td title="' + matchedPreference.company_name + '">' + matchedPreference.companyID + '</td>';
-
-        // Check if student_number is defined and is an array
-        if (Array.isArray(matchedPreference.student_number)) {
-            row.innerHTML += '<td title="' + matchedPreference.student_name.join(', ') + '">' + matchedPreference.student_number.join(', ') + '</td>';
-        } else {
-            row.innerHTML += '<td title="' + matchedPreference.student_name + '">' + matchedPreference.student_number + '</td>';
-        }
-
-        table.appendChild(row);
-    });
-}*/
-
         function resetPreferences() {
             var xhr = new XMLHttpRequest();
             xhr.onreadystatechange = function() {
@@ -166,28 +176,39 @@
     xhr.send();
 }
 
-        function applyFilter() {
-    var filterValue = document.getElementById('filterInput').value;
-    if (filterValue.trim() === '') {
-        // If the input field is empty, reset the table to show all matched preferences
-        retrieveMatchedPreferences();
-        return;
+    function applyFilter() {
+        var filterValue = document.getElementById('filterInput').value.trim();
+        if (filterValue === '') {
+            // If the input field is empty, reset the table to show all matched preferences
+            //document.getElementById('filterInput').value = ''; // Clear the input field
+            retrieveMatchedPreferences(); // Retrieve all rows
+            return;
+        }
+
+
+
+        // Send an AJAX request to retrieve filtered matched preferences
+        var xhr = new XMLHttpRequest();
+        xhr.onreadystatechange = function() {
+            if (xhr.readyState === 4 && xhr.status === 200) {
+                var matchedPreferences = JSON.parse(xhr.responseText);
+                displayMatchedPreferences(matchedPreferences);
+            } else if (xhr.readyState === 4) {
+                alert('Failed to apply filter. Please try again.');
+            }
+        };
+        xhr.open('GET', 'get_matched_preferences.php?filterValue=' + encodeURIComponent(filterValue), true);
+        xhr.send();
     }
 
-    // Send an AJAX request to retrieve filtered matched preferences
-    var xhr = new XMLHttpRequest();
-    xhr.onreadystatechange = function() {
-        if (xhr.readyState === 4 && xhr.status === 200) {
-            var matchedPreferences = JSON.parse(xhr.responseText);
-            displayMatchedPreferences(matchedPreferences);
-        } else if (xhr.readyState === 4) {
-            alert('Failed to apply filter. Please try again.');
-        }
-    };
-    xhr.open('GET', 'get_filtered_preferences.php?filterValue=' + encodeURIComponent(filterValue), true);
-    xhr.send();
-}
+    function removeFilter() {
+        document.getElementById('filterInput').value = ''; // Clear the input field
+        retrieveMatchedPreferences(); // Retrieve all rows
+    }
 
+    function retrieveAllMatches() {
+            retrieveMatchedPreferences(); // Retrieve all rows
+        }
 
     </script>
 </body>

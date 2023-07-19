@@ -24,8 +24,8 @@
                     
                     // Store the CV path in the database (assuming you have a MySQL connection established)
                     $cvPath = $destination; // Change this if you store the path differently
-                    $studentId = 12345; // Replace with the student's ID
-                    $sql = "INSERT INTO cvs (student_id, cv_path) VALUES ('$studentId', '$cvPath')";
+                    $student_number = 12345; // Replace with the student's ID
+                    $sql = "INSERT INTO cvs (student_number, cv_path) VALUES ('$student_number', '$cvPath')";
                     // Execute the SQL query
                     
                     // Additional logic for admin actions and feedback

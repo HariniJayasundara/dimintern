@@ -10,7 +10,13 @@ require_once('../db_connection.php');
 $filterValue = $_GET['filterValue'];
 
 // Query to retrieve matched preferences from the mapped_preference table based on the filter value
-$query = "SELECT DISTINCT preference_id, companyID, student_number FROM mapped_preference WHERE preference_id = '$filterValue' OR companyID = '$filterValue' OR student_number = '$filterValue'";
+$query = "SELECT DISTINCT preference_id, companyID, student_number FROM mapped_preference";
+
+// If a filter value is provided and it is not empty, add the filter conditions to the query
+if (!empty($filterValue)) {
+    $query .= " WHERE preference_id = '$filterValue' OR companyID = '$filterValue' OR student_number = '$filterValue'";
+}
+
 $result = mysqli_query($conn, $query);
 
 if ($result) {

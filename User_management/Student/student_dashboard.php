@@ -14,6 +14,7 @@ if (isset($_SESSION['preferred_name'])) {
     <title>Student Dashboard</title>
     <!-- Include your CSS stylesheet here -->
     <style type="text/css">
+      
         
 body {
   font-family: Arial, sans-serif;
