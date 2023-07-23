@@ -4,7 +4,7 @@ error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
 // Database connection file
-require_once('../db_connection.php');
+require_once('../../db_connection.php');
 
 // Function to retrieve student preferences from the database
 function getStudentPreferences($conn) {

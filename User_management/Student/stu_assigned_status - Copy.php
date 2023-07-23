@@ -18,19 +18,25 @@ if (isset($_SESSION['email'])) {
         $studentNumber = $row['student_number'];
 
         // Prepare and execute a query to check if the student is assigned
-        $stmt = $conn->prepare("SELECT preference_id, companyID FROM assigned_preferences WHERE student_number = ?");
+        $stmt = $conn->prepare("SELECT a.preference_id, p.preference_name, a.companyID, c.company_name 
+                                FROM assigned_preferences a 
+                                INNER JOIN preferences p ON a.preference_id = p.preference_id 
+                                INNER JOIN company c ON a.companyID = c.companyID 
+                                WHERE a.student_number = ?");
         $stmt->bind_param("s", $studentNumber);
         $stmt->execute();
         $result = $stmt->get_result();
 
         if ($result->num_rows > 0) {
-            // Student is assigned, retrieve preference_id and companyID
+            // Student is assigned, retrieve preference_id, preference_name, companyID, and company_name
             $row = $result->fetch_assoc();
             $preferenceId = $row['preference_id'];
+            $preferenceName = $row['preference_name'];
             $companyID = $row['companyID'];
+            $companyName = $row['company_name'];
 
-            // Construct the assigned status message
-            $statusMessage = "Assigned: Preference ID - $preferenceId, Company ID - $companyID";
+            // Construct the assigned status message with preference_name and company_name
+            $statusMessage = "Assigned: Preference ID - $preferenceId ($preferenceName), Company ID - $companyID ($companyName)";
         } else {
             // Student is not assigned
             $statusMessage = "Not assigned";
@@ -56,4 +62,3 @@ if (isset($_SESSION['email'])) {
 // Close the database connection
 $conn->close();
 ?>
-

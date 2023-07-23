@@ -9,8 +9,7 @@ require_once('../../db_connection.php');
 
 // Query to fetch student details from the database
 
-$query = "SELECT student.student_number, student.name_with_initials, student_contact.email FROM student
-          INNER JOIN student_contact ON student.student_number = student_contact.student_number";
+$query = "SELECT student_number, name_with_initials, email FROM student";
 $result = mysqli_query($conn, $query);
 
 $students = array();

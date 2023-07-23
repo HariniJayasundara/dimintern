@@ -76,19 +76,28 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             echo "Error deleting existing preferences: " . $conn->error;
         }
     }
-}
 
+} else {
+    // Fetch all preferences
+    $sql = "SELECT * FROM preferences";
+    $result = $conn->query($sql);
 
-// Fetch all preferences
-$sql = "SELECT * FROM preferences";
-$result = $conn->query($sql);
+    // Retrieve the company's previous preferences and number of CVs requested
+    $previousPreferencesQuery = "SELECT preference_id, num_cvs_requested FROM comp_preference WHERE companyID = '$companyID'";
+    $previousPreferencesResult = $conn->query($previousPreferencesQuery);
 
-if ($result) {
-    ?>
-    <!DOCTYPE html>
-    <html>
-    <head>
-        <title>Company Portal - Preferences</title>
+    // Create an array to store the company's previous preferences and CVs requested
+    $previousPreferences = array();
+    while ($row = $previousPreferencesResult->fetch_assoc()) {
+        $previousPreferences[$row['preference_id']] = $row['num_cvs_requested'];
+    }
+
+    if ($result) {
+        ?>
+        <!DOCTYPE html>
+        <html>
+        <head>
+           <title>Company Portal - Preferences</title>
         <style type="text/css">
             body {
   font-family: Arial, sans-serif;
@@ -110,7 +119,7 @@ if ($result) {
 }
 
 h2 {
-  text-align: center;
+  text-align: left;
   margin-bottom: 20px;
 }
 
@@ -177,40 +186,41 @@ footer {
                 var numCVsInput = document.getElementById('num_cvs_' + checkboxId);
                 numCVsInput.disabled = !numCVsInput.disabled;
             }
-        </script>
-    </head>
-    <body>
-        <h1>Select Preferences and Number of CVs</h1>
+        </script> 
+        </head>
+        <body>
+            <h1>Select Preferences and Number of CVs</h1>
 
-        <form action="comp_preferences.php" method="POST">
-            <h2>Select your preferences:</h2>
-            <?php
-            while ($row = $result->fetch_assoc()) {
-                $preferenceId = $row['preference_id'];
-                $preferenceName = $row['preference_name'];
-
-                ?>
-                <label>
-                    <input type="checkbox" name="preferences[<?php echo $preferenceId; ?>]" value="1" onchange="toggleNumCVsInput('<?php echo $preferenceId; ?>')">
-                    <?php echo $preferenceName; ?>
-                </label>
-                <br>
-                <label>
-                    Number of CVs:
-                    <input type="number" name="num_cvs[<?php echo $preferenceId; ?>]" id="num_cvs_<?php echo $preferenceId; ?>" min="0" disabled>
-                </label>
-                <br><br>
+            <form action="comp_preferences.php" method="POST">
+                <h2>(Previous selection is pre-selected)</h2><br>
                 <?php
-            }
-            ?>
+                while ($row = $result->fetch_assoc()) {
+                    $preferenceId = $row['preference_id'];
+                    $preferenceName = $row['preference_name'];
 
-            <button type="submit">Submit</button>
-        </form>
-    </body>
-    </html>
-    <?php
-} else {
-    echo "Error fetching preferences: " . $conn->error;
+                    ?>
+                    <label>
+                        <input type="checkbox" name="preferences[<?php echo $preferenceId; ?>]" value="1" onchange="toggleNumCVsInput('<?php echo $preferenceId; ?>')" <?php if (isset($previousPreferences[$preferenceId])) echo 'checked'; ?>>
+                        <?php echo $preferenceName; ?>
+                    </label>
+                    <br>
+                    <label>
+                        Number of CVs:
+                        <input type="number" name="num_cvs[<?php echo $preferenceId; ?>]" id="num_cvs_<?php echo $preferenceId; ?>" min="0" <?php if (isset($previousPreferences[$preferenceId])) echo 'value="' . $previousPreferences[$preferenceId] . '"'; ?> <?php if (!isset($previousPreferences[$preferenceId])) echo 'disabled'; ?>>
+                    </label>
+                    <br><br>
+                    <?php
+                }
+                ?>
+
+                <button type="submit">Submit</button>
+            </form>
+        </body>
+        </html>
+        <?php
+    } else {
+        echo "Error fetching preferences: " . $conn->error;
+    }
 }
 
 // Close the database connection

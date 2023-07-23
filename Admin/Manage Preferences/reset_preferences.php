@@ -1,6 +1,6 @@
 <?php
 // Database connection file
-require_once('../db_connection.php');
+require_once('../../db_connection.php');
 
 // Query to delete all existing records from the mapped_preference table
 $query = "DELETE FROM mapped_preference";

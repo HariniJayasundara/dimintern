@@ -10,9 +10,7 @@ require_once('../../db_connection.php');
 $studentNumber = $_GET['studentNumber'];
 
 // Fetch the student details from the database
-$query = "SELECT * FROM student 
-          INNER JOIN student_contact ON student.student_number = student_contact.student_number
-          WHERE student.student_number = ?";
+$query = "SELECT * FROM student WHERE student_number = ?";
 $stmt = $conn->prepare($query);
 $stmt->bind_param("s", $studentNumber);
 
@@ -56,6 +54,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {   // Retrieve the form data
     if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
         $errors[] = 'Invalid email format.';
     }
+// Add this code to check $_POST data
+    echo "<pre>";
+    print_r($_POST);
+    echo "</pre>";
+
+
 
     // Check for any validation errors
     if (!empty($errors)) {
@@ -65,33 +69,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {   // Retrieve the form data
         exit();
     }
 
-
 // Update the student details
-    $query = "UPDATE student
-          INNER JOIN student_contact ON student.student_number = student_contact.student_number
-          SET student.preferred_name = ?,
-              student_contact.email = ?,
-              student_contact.phone_number = ?,
-              student.specialization = ?,
-              student.current_gpa = ?";
-
-if (!empty($qualifications)) {
-    $query .= ", student.qualifications = ?";
-}
-
-if (!empty($extra_curricular_activities)) {
-    $query .= ", student.extra_curricular_activities = ?";
-}
-
-if (!empty($special_achievements)) {
-    $query .= ", student.special_achievements = ?";
-}
-
-if (!empty($linkedin_account)) {
-    $query .= ", student_contact.linkedin_account = ?";
-}
-
-$query .= " WHERE student.student_number = ?";
+$query = "UPDATE student
+          SET preferred_name = ?,
+              email = ?,
+              phone_number = ?,
+              specialization = ?,
+              current_gpa = ?,
+              qualifications = ?,
+              special_achievements = ?,
+              extra_curricular_activities = ?,
+              linkedin_account = ?
+          WHERE student_number = ?";
 
 $stmt = $conn->prepare($query);
 if ($stmt === false) {
@@ -99,39 +88,25 @@ if ($stmt === false) {
     exit();
 }
 
+// Construct the $types string for bind_param
+$types = "ssssssssss"; // For all possible fields (preferred_name, email, phone_number, specialization, current_gpa, qualifications, special_achievements, extra_curricular_activities, linkedin_account, student_number)
+
+// Add the student data and student number to the $bindings array
 $bindings = array(
-    "ssssss",
     $preferred_name,
     $email,
     $phone_number,
     $specialization,
-    $current_gpa
+    $current_gpa,
+    $qualifications,
+    $special_achievements,
+    $extra_curricular_activities,
+    $linkedin_account,
+    $studentNumber // Add the student number parameter to the $bindings array
 );
 
-if (!empty($qualifications)) {
-    $bindings[0] .= "s";
-    $bindings[] = $qualifications;
-}
-
-if (!empty($extra_curricular_activities)) {
-    $bindings[0] .= "s";
-    $bindings[] = $extra_curricular_activities;
-}
-
-if (!empty($special_achievements)) {
-    $bindings[0] .= "s";
-    $bindings[] = $special_achievements;
-}
-
-if (!empty($linkedin_account)) {
-    $bindings[0] .= "s";
-    $bindings[] = $linkedin_account;
-}
-
-// Add the student number parameter to the bindings array
-$bindings[] = $studentNumber;
-
-$stmt->bind_param(...$bindings);
+// Bind the parameters using the dynamically generated $types string and $bindings array
+$stmt->bind_param($types, ...$bindings);
 
 if ($stmt->execute()) {
     // Student details updated successfully
@@ -146,6 +121,7 @@ if ($stmt->execute()) {
 // Close the prepared statement
 $stmt->close();
 }
+
 ?>
 
 <!DOCTYPE html>

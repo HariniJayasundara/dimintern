@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>View interns</title>
+  <style type="text/css">
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f2f2f2;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+
+    h1 {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    #assignments-container {
+      margin-top: 30px;
+    }
+
+    .assignment-card {
+      background-color: #ffffff;
+      padding: 15px;
+      border-radius: 5px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      margin-bottom: 15px;
+    }
+
+    footer {
+      background-color: #03a68d;
+      color: white;
+      text-align: center;
+      padding: 20px;
+      margin: 0px;
+      width: 100%;
+      position: fixed;
+      bottom: 0;
+    }
+
+    .footer-content {
+      font-size: 14px;
+    }
+  </style>
+</head>
+<body>
+  <h1>View Interns and Set Status</h1>
+  <div class="container">
+    <div id="assignments-container">Loading...</div>
+  </div>
+
+  <footer>
+    <div class="footer-content">
+      Department of Industrial Management - Faculty of Science - University of Kelaniya
+    </div>
+  </footer>
+
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+ 
+  <script>
+  $(document).ready(function() {
+    // Make an AJAX request to fetch student assignments
+    $.ajax({
+      url: 'comp_viewInterns.php',
+      type: 'POST',
+      dataType: 'json',
+      success: function(data) {
+        if (data.response_status === 'message') {
+          // Display a message box if students are selected by other companies
+          var selectedByOtherCompany = data.selectedByOtherCompany;
+          var message = "The following student(s) have been selected by another company:\n";
+          for (var i = 0; i < selectedByOtherCompany.length; i++) {
+            message += selectedByOtherCompany[i].student_number + " (Selected by: " + selectedByOtherCompany[i].selected_companyID + ")\n";
+          }
+          alert(message);
+
+          // Update the assignments list after displaying the message box
+          var assignments = data.assignments;
+          var statuses = data.statuses;
+          var assignmentsList = '';
+          for (var i = 0; i < assignments.length; i++) {
+            var studentNumber = assignments[i].student_number;
+            var preferenceId = assignments[i].preference_id;
+            var preferenceName = assignments[i].preference_name;
+            var currentStatus = assignments[i].current_status;
+
+            // Create a dropdown with status options
+            var statusOptions = '';
+            for (var statusId in statuses) {
+              statusOptions += '<option value="' + statusId + '"';
+              if (statusId === currentStatus) {
+                statusOptions += ' selected';
+              }
+              statusOptions += '>' + statuses[statusId] + '</option>';
+            }
+
+            // Construct the assignment card
+            assignmentsList += '<div class="assignment-card">';
+            assignmentsList += '<p class="student-number">Student Number: ' + studentNumber + '</p>';
+            assignmentsList += '<p>Preference ID: ' + preferenceId + '</p>';
+            assignmentsList += '<p>Preference Name: ' + preferenceName + '</p>';
+            assignmentsList += '<p>Current Status: ';
+            assignmentsList += '<select class="status-dropdown" data-student="' + studentNumber + '">' + statusOptions + '</select>';
+            assignmentsList += '</p>';
+            assignmentsList += '</div>';
+          }
+          $('#assignments-container').html(assignmentsList);
+        } else if (data.response_status === 'success') {
+
+          // Display student assignments and status options on the page
+          var assignments = data.assignments;
+          var statuses = data.statuses;
+          var assignmentsList = '';
+          for (var i = 0; i < assignments.length; i++) {
+            var studentNumber = assignments[i].student_number;
+            var preferenceId = assignments[i].preference_id;
+            var preferenceName = assignments[i].preference_name;
+            var currentStatus = assignments[i].current_status;
+
+            // Create a dropdown with status options
+            var statusOptions = '';
+            for (var statusId in statuses) {
+              statusOptions += '<option value="' + statusId + '"';
+              if (statusId === currentStatus) {
+                statusOptions += ' selected';
+              }
+              statusOptions += '>' + statuses[statusId] + '</option>';
+            }
+
+            // Construct the assignment card
+            assignmentsList += '<div class="assignment-card">';
+            assignmentsList += '<p class="student-number">Student Number: ' + studentNumber + '</p>';
+            assignmentsList += '<p>Preference ID: ' + preferenceId + '</p>';
+            assignmentsList += '<p>Preference Name: ' + preferenceName + '</p>';
+            assignmentsList += '<p>Current Status: ';
+            assignmentsList += '<select class="status-dropdown" data-student="' + studentNumber + '">' + statusOptions + '</select>';
+            assignmentsList += '</p>';
+            assignmentsList += '</div>';
+          }
+          $('#assignments-container').html(assignmentsList);
+
+          // Attach event handler for status change
+          $('.status-dropdown').change(function() {
+            var studentNumber = $(this).data('student');
+            var newStatus = $(this).val();
+
+            // Make an AJAX request to update the current_status
+            $.ajax({
+              url: 'comp_updateStatus.php',
+              type: 'POST',
+              data: { student_number: studentNumber, new_status: newStatus },
+              dataType: 'json',
+              success: function(response) {
+                if (response.response_status === 'success') {
+                  alert('Status updated successfully!');
+                } else {
+                  alert('Error: ' + response.message);
+                }
+              },
+              error: function() {
+                alert('Error: Failed to update status.');
+              }
+            });
+          });
+        } else {
+          // Display error message if data retrieval fails
+          $('#assignments-container').html('<p>Error: ' + data.message + '</p>');
+        }
+      },
+      error: function() {
+        $('#assignments-container').html('<p>Error: Failed to fetch student assignments.</p>');
+      }
+    });
+  });
+</script>
+
+</body>
+</html>

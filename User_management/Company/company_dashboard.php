@@ -102,13 +102,13 @@ footer {
         <div class="card">
             <h3>View Allocated CVs</h3>
             <p>View CVs of interns allocated to your company</p>
-            <a href="view_cvs.php">Go to View Allocated CVs</a>
+            <a href="comp_viewCV.php">Go to View Allocated CVs</a>
         </div>
 
         <div class="card">
-            <h3>View Confirmed Interns</h3>
-            <p>View a list of confirmed interns for your company</p>
-            <a href="view_interns.php">Go to View Confirmed Interns</a>
+            <h3>View Allocated Interns</h3>
+            <p>View a list of allocated interns and set their internship status</p>
+            <a href="comp_viewInterns.html">Go to View Allocated Interns</a>
         </div>
 
         <div class="card">

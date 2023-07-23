@@ -17,22 +17,13 @@ $stmt->bind_param("s", $studentNumber);
 
 $response = array();
 
-if ($stmt->execute()) {
-    // Delete from student_contact table
-    $query = "DELETE FROM student_contact WHERE student_number = ?";
-    $stmt = $conn->prepare($query);
-    $stmt->bind_param("s", $studentNumber);
-
     if ($stmt->execute()) {
-        $response['success'] = true;
-    } else {
-        $response['success'] = false;
-        $response['message'] = "Error deleting student account.";
-    }
-} else {
-    $response['success'] = false;
-    $response['message'] = "Error deleting student account.";
-}
+            $response['success'] = true;
+        } else {
+            $response['success'] = false;
+            $response['message'] = "Error deleting student account.";
+        }
+
 
 // Return the response as JSON
 header('Content-Type: application/json');

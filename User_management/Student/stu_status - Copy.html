@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Student Internship Status</title>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+  <script>
+    $(document).ready(function() {
+      // Make an AJAX request to fetch student status
+      $.ajax({
+        url: 'stu_assigned_status.php',
+        type: 'POST',
+        dataType: 'json',
+        success: function(data) {
+          if (data.status === 'success') {
+            // Display student status on the page
+            $('#status').text(data.message);
+          } else {
+            // Display error message if status retrieval fails
+            $('#status').text('Error: ' + data.message);
+          }
+        },
+        error: function() {
+          $('#status').text('Error: Failed to fetch student status.');
+        }
+      });
+    });
+  </script>
+  <style type="text/css">
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f2f2f2;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+
+    .container {
+      max-width: 500px;
+      margin: 0 auto;
+      background-color: #ffffff;
+      padding: 20px;
+      border-radius: 5px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    }
+
+    h1 {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    #status {
+      text-align: left;
+      font-size: 18px;
+      margin-top: 30px;
+    }
+
+    footer {
+      background-color: #03a68d;
+      color: white;
+      text-align: center;
+      padding: 20px;
+      margin: 0px;
+      width: 100%;
+      position: fixed;
+      bottom: 0;
+    }
+
+    .footer-content {
+      font-size: 14px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Student Internship Status</h1>
+  <div class="container">
+    <p id="status">Loading...</p>
+  </div>
+
+  <footer>
+    <div class="footer-content">
+      Department of Industrial Management - Faculty of Science - University of Kelaniya
+    </div>
+  </footer>
+</body>
+</html>

@@ -51,18 +51,41 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     } else {
         echo "Please select a minimum of 3 and a maximum of 5 preferences.";
     }
-}
 
-// Fetch all preferences
-$sql = "SELECT preference_id, preference_name FROM preferences";
-$result = $conn->query($sql);
+} else {
+    // Fetch all preferences
+    $sql = "SELECT preference_id, preference_name FROM preferences";
+    $result = $conn->query($sql);
 
-if ($result) {
-    ?>
-    <!DOCTYPE html>
-    <html>
-    <head>
-        <title>Student Portal - Preferences</title>
+    if ($result) {
+        // Fetch the student number based on the email
+        if (isset($_SESSION['email'])) {
+            $email = $_SESSION['email'];
+
+            $studentQuery = "SELECT student_number FROM student WHERE email = '$email'";
+            $studentResult = $conn->query($studentQuery);
+
+            if ($studentResult && $studentResult->num_rows > 0) {
+                $studentRow = $studentResult->fetch_assoc();
+                $student_number = $studentRow['student_number'];
+
+                // Retrieve the student's previous preferences
+                $previousPreferencesQuery = "SELECT preference_id FROM stu_preference WHERE student_number = '$student_number'";
+                $previousPreferencesResult = $conn->query($previousPreferencesQuery);
+
+                // Create an array to store the student's previous preferences
+                $previousPreferences = array();
+                while ($row = $previousPreferencesResult->fetch_assoc()) {
+                    $previousPreferences[] = $row['preference_id'];
+                }
+            }
+        }
+        ?>
+
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <title>Student Portal - Preferences</title>
         <style type="text/css">  
   body {
   font-family: Arial, sans-serif;
@@ -84,7 +107,7 @@ if ($result) {
 }
 
 h2 {
-  text-align: center;
+  text-align: left;
   margin-bottom: 20px;
 }
 
@@ -196,34 +219,36 @@ footer {
   font-size: 14px;
 } 
         </style>
-    </head>
-    <body>
-        <h1>Select Preferences</h1>
+        </head>
+        <body>
+            <h1>Select Preferences</h1> <br>
+            <h2>(Previously selected preferences are pre-selected)</h2> <br>
 
-        <form action="stu_preference.php" method="POST">
-            <h2>Select your preferences:</h2>
-            <?php
-            while ($row = $result->fetch_assoc()) {
-                $preferenceId = $row['preference_id'];
-                $preferenceName = $row['preference_name'];
-
-                ?>
-                <label>
-                    <input type="checkbox" name="preferences[]" value="<?php echo $preferenceId; ?>">
-                    <?php echo $preferenceName; ?>
-                </label>
-                <br>
+            <form action="stu_preference.php" method="POST">
+                <!-- <h2>Select your preferences:</h2> -->
                 <?php
-            }
-            ?>
+                while ($row = $result->fetch_assoc()) {
+                    $preferenceId = $row['preference_id'];
+                    $preferenceName = $row['preference_name'];
 
-            <button type="submit">Submit</button>
-        </form>
-    </body>
-    </html>
-    <?php
-} else {
-    echo "Error fetching preferences: " . $conn->error;
+                    ?>
+                    <label>
+                        <input type="checkbox" name="preferences[]" value="<?php echo $preferenceId; ?>" <?php if (isset($previousPreferences) && in_array($preferenceId, $previousPreferences)) echo 'checked'; ?>>
+                        <?php echo $preferenceName; ?>
+                    </label>
+                    <br>
+                    <?php
+                }
+                ?>
+
+                <button type="submit">Submit</button>
+            </form>
+        </body>
+        </html>
+        <?php
+    } else {
+        echo "Error fetching preferences: " . $conn->error;
+    }
 }
 
 // Close the database connection

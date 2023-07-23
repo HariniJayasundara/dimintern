@@ -171,15 +171,15 @@ footer {
         </div>
 
         <div class="card">
-            <h2>Add Preferences</h2>
-            <p>Add your preferred intern positions here.</p>
-            <a href="stu_preference.php">Add</a>
+            <h2>Internship Status</h2>
+            <p>View current allocation status.</p>
+            <a href="stu_status.html">View</a>
         </div>
 
         <div class="card">
-            <h2>Internship Status</h2>
-            <p>View current allocation status.</p>
-            <a href="stu_status.php">View</a>
+            <h2>Add Preferences</h2>
+            <p>Add your preferred intern positions here.</p>
+            <a href="stu_preference.php">Add</a>
         </div>
 
         <div class="card">
@@ -188,13 +188,19 @@ footer {
             <a href="upload_reports.php">Upload</a>
         </div>
 
+        <div class="card">
+            <h2>View Feedback</h2>
+            <p>View feedback for uploaded documents here.</p>
+            <a href="stu_feedback.php">View</a>
+        </div>
+
     </div>
 
     <footer>
-                <div class="footer-content">
-                    Department of Industrial Management - Faculty of Science - University of Kelaniya
-                </div>
-        </footer>
+      <div class="footer-content">
+        Department of Industrial Management - Faculty of Science - University of Kelaniya
+      </div>
+    </footer>
 
 </body>
 </html>

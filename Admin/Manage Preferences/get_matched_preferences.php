@@ -4,7 +4,7 @@ error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
 // Database connection file
-require_once('../db_connection.php');
+require_once('../../db_connection.php');
 
 // Get the filter value from the query parameters
 $filterValue = $_GET['filterValue'];

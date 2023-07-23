@@ -4,7 +4,7 @@ error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
 // Database connection file
-require_once('../db_connection.php');
+require_once('../../db_connection.php');
 
 // Fetch all preferences
 $sql = "SELECT preference_id, preference_name FROM preferences";
