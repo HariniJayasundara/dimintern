@@ -104,14 +104,12 @@
         var xhr = new XMLHttpRequest();
         xhr.onreadystatechange = function() {
             if (xhr.readyState === 4 && xhr.status === 200) {
-                var matchedPreferences = JSON.parse(xhr.responseText);
-                displayMatchedPreferences(matchedPreferences);
+                retrieveMatchedPreferences(filterValue);
             } else if (xhr.readyState === 4) {
                 alert('Failed to match preferences. Please try again.');
             }
         };
-        // Include the filterValue in the URL
-        xhr.open('GET', 'get_matched_preferences.php?filterValue=' + encodeURIComponent(filterValue), true);
+        xhr.open('GET', 'map_preferences.php', true);
         xhr.send();
     }
 

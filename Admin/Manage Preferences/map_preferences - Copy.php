@@ -59,45 +59,6 @@ function getCompanyPreferences($conn) {
     return $companyPreferences;
 }
 
-// Function to check if a student has been selected for any preference
-function isStudentSelected($conn, $studentNumber) {
-    $sql = "SELECT selected_companyID FROM assigned_preferences WHERE student_number = '$studentNumber' AND selected_companyID IS NOT NULL";
-    $result = $conn->query($sql);
-    return $result->num_rows > 0;
-}
-
-// // Function to retrieve unassigned student numbers
-// function getUnassignedStudentNumbers($conn) {
-//     $sql = "SELECT student_number FROM assigned_preferences WHERE selected_companyID IS NULL";
-//     $result = $conn->query($sql);
-
-//     $unassignedStudents = array();
-//     while ($row = $result->fetch_assoc()) {
-//         $unassignedStudents[] = $row['student_number'];
-//     }
-
-//     $result->free_result();
-
-//     return $unassignedStudents;
-// }
-
-
-
-// Add the following function to retrieve the list of student numbers that have already been selected
-function getSelectedStudentNumbers($conn) {
-    $sql = "SELECT DISTINCT student_number FROM assigned_preferences WHERE selected_companyID IS NOT NULL";
-    $result = $conn->query($sql);
-
-    $selectedStudentNumbers = array();
-    while ($row = $result->fetch_assoc()) {
-        $selectedStudentNumbers[] = $row['student_number'];
-    }
-
-    $result->free_result();
-
-    return $selectedStudentNumbers;
-}
-
 // Retrieve student preferences
 $studentPreferences = getStudentPreferences($conn);
 
@@ -107,19 +68,16 @@ $companyPreferences = getCompanyPreferences($conn);
 // Match preferences
 $matchedPreferences = array();
 
-// Get the list of student numbers that have already been selected
-$selectedStudentNumbers = getSelectedStudentNumbers($conn);
-
-// Modify the matching process to ignore the selected student numbers
+// Iterate through each company
 foreach ($companyPreferences as $companyId => $preferences) {
     // Iterate through each preference of the company
     foreach ($preferences as $companyPreference) {
         $preferenceId = $companyPreference['preference_id'];
         $numCVsRequested = $companyPreference['num_cvs_requested'];
 
-        // Retrieve students who have selected the current preference and have not been selected already
-        $matchingStudents = array_keys(array_filter($studentPreferences, function($studentPreference) use ($preferenceId, $conn, $selectedStudentNumbers) {
-            return isset($studentPreference[$preferenceId]) && !in_array($studentPreference, $selectedStudentNumbers);
+        // Retrieve students who have selected the current preference
+        $matchingStudents = array_keys(array_filter($studentPreferences, function($studentPreference) use ($preferenceId) {
+            return isset($studentPreference[$preferenceId]);
         }));
 
         // Check if there are enough students available for the current preference
@@ -198,6 +156,21 @@ foreach ($companyPreferences as $companyId => $preferences) {
     }
 }
 
+                $numCVsAssigned++;
+                $numCVsRequested--;
+
+                // Update matched preference
+                $matchedPreferences[count($matchedPreferences) - 1]['studentNumbers'][] = $remainingStudentNumber;
+                $matchedPreferences[count($matchedPreferences) - 1]['numCVsAssigned'] = $numCVsAssigned;
+
+                // Remove assigned student from the available students list
+                unset($studentPreferences[$remainingStudentNumber][$remainingPreferenceId]);
+
+                // If the remaining student has no more preferences, remove them from the list
+                if (empty($studentPreferences[$remainingStudentNumber])) {
+                    unset($studentPreferences[$remainingStudentNumber]);
+                }
+
 // Store matched preferences in the mapped_preference table
 $stmt = $conn->prepare("INSERT INTO mapped_preference (companyID, preference_id, student_number) VALUES (?, ?, ?)");
 if ($stmt) {
@@ -219,6 +192,7 @@ if ($stmt) {
     echo "Failed to prepare the statement.";
 }
 
+
 // Close the database connection
-$conn->close();
+$conn = null;
 ?>

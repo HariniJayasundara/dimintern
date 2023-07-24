@@ -3,7 +3,7 @@
 require_once('../../db_connection.php');
 session_start();
 
-// Check if the admin is logged in (You may need to implement admin login functionality)
+// Check if the admin is logged in 
 //if (isset($_SESSION['admin_email'])) {
     // Fetch all student assignments with details from the database
     $assignmentsStmt = $conn->prepare("SELECT a.student_number, p.preference_name, c.company_name, s.status
