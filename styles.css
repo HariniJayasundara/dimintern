@@ -1,0 +1,78 @@
+/* styles.css */
+body {
+  font-family: Arial, sans-serif;
+  background-color: #f2f2f2;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+header {
+  background-color: #333;
+  color: #fff;
+  padding: 10px;
+  display: flex;
+  align-items: center;
+}
+
+.header-logo {
+  margin-right: 10px;
+  /* Set the width and height of the logo here */
+}
+
+.header-logo img {
+  width: 50px; /* Adjust this value to your desired logo width */
+  height: 50px; /* Adjust this value to your desired logo height */
+}
+
+.header-title {
+  font-size: 18px;
+  font-weight: bold;
+}
+
+.header-options {
+  margin-left: auto;
+}
+
+.header-options a {
+  color: #fff;
+  text-decoration: none;
+  margin-left: 10px;
+}
+
+.home-img img {
+  position: fixed;
+  margin-right: 10px;
+  width: 30%;
+  height: 60%%;
+  margin-right: 10px;
+}
+
+.container {
+  max-width: 500px;
+  margin: 0 auto;
+  background-color: #ffffff;
+  padding: 20px;
+  border-radius: 5px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+/* Add other styles here as needed */
+
+/* Footer styles */
+footer {
+  background-color: #03a68d;
+  color: white;
+  text-align: center;
+  padding: 20px;
+  margin: 0;
+  width: 100%;
+  position: fixed;
+  bottom: 0;
+}
+
+.footer-content {
+  font-size: 14px;
+}

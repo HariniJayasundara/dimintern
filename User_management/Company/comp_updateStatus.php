@@ -5,85 +5,90 @@ session_start();
 
 // Check if the company is logged in
 if (isset($_SESSION['email'])) {
-    $companyEmail = $_SESSION['email'];
+  $companyEmail = $_SESSION['email'];
 
-    // Fetch the companyID based on the email
-    $stmt = $conn->prepare("SELECT companyID FROM company WHERE email = ?");
-    $stmt->bind_param("s", $companyEmail);
-    if ($stmt->execute()) {
-        $result = $stmt->get_result();
+  // Fetch the companyID based on the email
+  $stmt = $conn->prepare("SELECT companyID FROM company WHERE email = ?");
+  $stmt->bind_param("s", $companyEmail);
+  if ($stmt->execute()) {
+    $result = $stmt->get_result();
 
-        if ($result->num_rows > 0) {
-            $row = $result->fetch_assoc();
-            $companyID = $row['companyID'];
+    if ($result->num_rows > 0) {
+      $row = $result->fetch_assoc();
+      $companyID = $row['companyID'];
 
-            // Check if the required parameters are received
-            if (isset($_POST['student_number']) && isset($_POST['new_status'])) {
-                $studentNumber = $_POST['student_number'];
-                $newStatus = $_POST['new_status'];
+      // Check if the required parameters are present in the POST request
+      if (isset($_POST['student_number']) && isset($_POST['new_status']) && isset($_POST['preference_id'])) {
+        $studentNumber = $_POST['student_number'];
+        $newStatus = $_POST['new_status'];
+        $preferenceID = $_POST['preference_id'];
 
-                // Check if the student has been selected by another company before updating the status
-                $selectedByOtherCompanyStmt = $conn->prepare("SELECT selected_companyID FROM assigned_preferences WHERE student_number = ?");
-                $selectedByOtherCompanyStmt->bind_param("s", $studentNumber);
-                if ($selectedByOtherCompanyStmt->execute()) {
-                    $selectedByOtherCompanyResult = $selectedByOtherCompanyStmt->get_result();
-                    if ($selectedByOtherCompanyResult->num_rows > 0) {
-                        $row = $selectedByOtherCompanyResult->fetch_assoc();
-                        $selectedCompanyID = $row['selected_companyID'];
+        // Fetch the previous status of the student for the specific preference_id
+        $prevStatusStmt = $conn->prepare("SELECT current_status FROM assigned_preferences WHERE companyID = ? AND student_number = ? AND preference_id = ?");
+        $prevStatusStmt->bind_param("sss", $companyID, $studentNumber, $preferenceID);
+        if ($prevStatusStmt->execute()) {
+          $prevStatusResult = $prevStatusStmt->get_result();
 
-                        // If the student has been selected by another company, do not allow the status update
-                        if ($selectedCompanyID !== $companyID) {
-                            $response = array('response_status' => 'error', 'message' => 'Student has been selected by another company.');
-                            header('Content-Type: application/json');
-                            echo json_encode($response);
-                            exit();
-                        }
-                    }
-                } else {
-                    // Error executing the query
-                    $response = array('response_status' => 'error', 'message' => 'Failed to check if the student has been selected by another company: ' . $conn->error);
-                    header('Content-Type: application/json');
-                    echo json_encode($response);
-                    exit();
-                }
+          if ($prevStatusResult->num_rows > 0) {
+            $prevStatusRow = $prevStatusResult->fetch_assoc();
+            $prevStatus = $prevStatusRow['current_status'];
 
-                // Prepare and execute a query to update the current_status for the student assignment
-                $updateStmt = $conn->prepare("UPDATE assigned_preferences SET current_status = ? WHERE companyID = ? AND student_number = ?");
-                $updateStmt->bind_param("sss", $newStatus, $companyID, $studentNumber);
-                if ($updateStmt->execute()) {
-                    // Successfully updated status
-                    $response = array('response_status' => 'success');
-                    header('Content-Type: application/json');
-                    echo json_encode($response);
-                } else {
-                    // Failed to update status
-                    $response = array('response_status' => 'error', 'message' => 'Failed to update status: ' . $conn->error);
-                    header('Content-Type: application/json');
-                    echo json_encode($response);
-                }
+            if ($newStatus === 'S4' && $prevStatus !== 'S4') {
+              // If the new status is 'S4' and previous status was not 'S4', update selected_companyID with companyID
+              $updateStmt = $conn->prepare("UPDATE assigned_preferences SET current_status = ?, selected_companyID = ? WHERE companyID = ? AND student_number = ? AND preference_id = ?");
+              $updateStmt->bind_param("sssss", $newStatus, $companyID, $companyID, $studentNumber, $preferenceID);
             } else {
-                // Required parameters not received
-                $response = array('response_status' => 'error', 'message' => 'Missing parameters.');
-                header('Content-Type: application/json');
-                echo json_encode($response);
+              // If the new status is not 'S4', update only the current_status
+              $updateStmt = $conn->prepare("UPDATE assigned_preferences SET current_status = ? WHERE companyID = ? AND student_number = ? AND preference_id = ?");
+              $updateStmt->bind_param("ssss", $newStatus, $companyID, $studentNumber, $preferenceID);
             }
-        } else {
-            // Company not found in the company table
-            $response = array('response_status' => 'error', 'message' => 'Company not found');
+
+            if ($updateStmt->execute()) {
+              // Success response
+              $response = array('response_status' => 'success');
+              header('Content-Type: application/json');
+              echo json_encode($response);
+            } else {
+              // Error updating the status
+              $response = array('response_status' => 'error', 'message' => 'Failed to update status: ' . $conn->error);
+              header('Content-Type: application/json');
+              echo json_encode($response);
+            }
+          } else {
+            // Student not found in assigned_preferences table for the specific preference_id
+            $response = array('response_status' => 'error', 'message' => 'Student not found for the given preference_id');
             header('Content-Type: application/json');
             echo json_encode($response);
+          }
+        } else {
+          // Error executing the query
+          $response = array('response_status' => 'error', 'message' => 'Failed to fetch previous status: ' . $conn->error);
+          header('Content-Type: application/json');
+          echo json_encode($response);
         }
-    } else {
-        // Error executing the companyID query
-        $response = array('response_status' => 'error', 'message' => 'Failed to fetch company information: ' . $conn->error);
+      } else {
+        // Missing parameters in the request
+        $response = array('response_status' => 'error', 'message' => 'Missing parameters: student_number, new_status, and preference_id are required.');
         header('Content-Type: application/json');
         echo json_encode($response);
+      }
+    } else {
+      // Company not found in the company table
+      $response = array('response_status' => 'error', 'message' => 'Company not found');
+      header('Content-Type: application/json');
+      echo json_encode($response);
     }
-} else {
-    // Company is not logged in
-    $response = array('response_status' => 'error', 'message' => 'Company not logged in');
+  } else {
+    // Error executing the companyID query
+    $response = array('response_status' => 'error', 'message' => 'Failed to fetch company information: ' . $conn->error);
     header('Content-Type: application/json');
     echo json_encode($response);
+  }
+} else {
+  // Company is not logged in
+  $response = array('response_status' => 'error', 'message' => 'Company not logged in');
+  header('Content-Type: application/json');
+  echo json_encode($response);
 }
 
 // Close the database connection

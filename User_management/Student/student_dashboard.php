@@ -165,7 +165,7 @@ footer {
     <!-- Add Cards -->
     <div class="dashboard-cards">
         <div class="card">
-            <h2>Upload CV</h2>
+            <h2>CV</h2>
             <p>Upload your CV here.</p>
             <a href="upload_cv.php">Upload</a>
         </div>
@@ -177,19 +177,19 @@ footer {
         </div>
 
         <div class="card">
-            <h2>Add Preferences</h2>
+            <h2>Preferences</h2>
             <p>Add your preferred intern positions here.</p>
             <a href="stu_preference.php">Add</a>
         </div>
 
         <div class="card">
-            <h2>Upload Reports</h2>
+            <h2>Reports</h2>
             <p>Upload your reports here.</p>
             <a href="upload_reports.php">Upload</a>
         </div>
 
         <div class="card">
-            <h2>View Feedback</h2>
+            <h2>Feedback</h2>
             <p>View feedback for uploaded documents here.</p>
             <a href="stu_feedback.php">View</a>
         </div>

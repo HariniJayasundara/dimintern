@@ -96,25 +96,25 @@ footer {
         <div class="card">
             <h3>Add Preferences</h3>
             <p>Add your preferences for intern allocation</p>
-            <a href="comp_preferences.php">Go to Add Preferences</a>
+            <a href="comp_preferences.php">Add</a>
         </div>
 
         <div class="card">
             <h3>View Allocated CVs</h3>
             <p>View CVs of interns allocated to your company</p>
-            <a href="comp_viewCV.php">Go to View Allocated CVs</a>
+            <a href="comp_viewCV.php">View</a>
         </div>
 
         <div class="card">
             <h3>View Allocated Interns</h3>
             <p>View a list of allocated interns and set their internship status</p>
-            <a href="comp_viewInterns.html">Go to View Allocated Interns</a>
+            <a href="comp_viewInterns.html">View</a>
         </div>
 
         <div class="card">
             <h3>Upload Reports</h3>
-            <p>Upload and manage internship reports</p>
-            <a href="upload_reports.php">Go to Upload Reports</a>
+            <p>Upload reports on interns</p>
+            <a href="upload_reports.php">Upload</a>
         </div>
     </div>
 

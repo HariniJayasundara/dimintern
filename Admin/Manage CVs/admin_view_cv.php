@@ -1,145 +1,159 @@
+<?php
+// Include the database connection file
+require_once '../../db_connection.php';
+
+// Function to fetch all CVs based on optional filters
+function getCVs($conn, $filters = array()) {
+    $sql = "SELECT cvs.cv_id, cvs.student_number, cvs.cv_path, feedback.feedback AS existing_feedback
+            FROM cvs
+            LEFT JOIN feedback ON cvs.cv_id = feedback.doc_id";
+
+    if (!empty($filters)) {
+        $sql .= " WHERE " . implode(" AND ", $filters);
+    }
+
+    $result = $conn->query($sql);
+    if (!$result) {
+        die("Error fetching CVs: " . $conn->error);
+    }
+
+    $cvs = array();
+    while ($row = $result->fetch_assoc()) {
+        $cvs[] = $row;
+    }
+    return $cvs;
+}
+
+
+// Function to save new feedback for a CV or update existing feedback
+function saveFeedback($conn, $cv_id, $feedback) {
+    $cv_id = $conn->real_escape_string($cv_id);
+    $feedback = $conn->real_escape_string($feedback);
+
+    // Get the student_number from the corresponding CV
+    $sql = "SELECT student_number FROM cvs WHERE cv_id = '$cv_id'";
+    $result = $conn->query($sql);
+    if (!$result) {
+        die("Error fetching student_number: " . $conn->error);
+    }
+
+    $row = $result->fetch_assoc();
+    $user_id = $row['student_number'];
+
+    // Check if feedback already exists for this CV
+    $sql = "SELECT COUNT(*) AS feedback_count FROM feedback WHERE doc_id = '$cv_id'";
+    $result = $conn->query($sql);
+    if (!$result) {
+        die("Error fetching existing feedback: " . $conn->error);
+    }
+
+    $row = $result->fetch_assoc();
+    $feedbackCount = $row['feedback_count'];
+
+    if ($feedbackCount > 0) {
+        // If feedback exists, update existing feedback
+        $sql = "UPDATE feedback SET feedback = '$feedback' WHERE doc_id = '$cv_id'";
+    } else {
+        // If no existing feedback, insert new feedback
+        $sql = "INSERT INTO feedback (doc_id, user_id, feedback) VALUES ('$cv_id', '$user_id', '$feedback')";
+    }
+
+    if ($conn->query($sql) === TRUE) {
+        return true;
+    } else {
+        die("Error saving feedback: " . $conn->error);
+    }
+}
+
+
+
+// Handle form submission for adding feedback
+$feedbackAlert = "";
+if (isset($_POST['submit_feedback'])) {
+    $cv_id = $_POST['cv_id'];
+    $feedback = $_POST['feedback'];
+
+    // Attempt to save the feedback
+    if (saveFeedback($conn, $cv_id, $feedback)) {
+        $feedbackAlert = "Feedback sent successfully!";
+    } else {
+        $feedbackAlert = "Failed to send feedback.";
+    }
+}
+
+// Handle filter options
+$filters = array();
+
+// Add filter for student number
+if (isset($_GET['student_number']) && !empty($_GET['student_number'])) {
+    $student_number = $conn->real_escape_string($_GET['student_number']);
+    $filters[] = "cvs.student_number = '$student_number'";
+}
+
+// Add filter to get CVs with no existing feedback
+if (isset($_GET['no_feedback']) && $_GET['no_feedback'] === 'true') {
+    $filters[] = "feedback.feedback IS NULL";
+}
+
+// Fetch all CVs with filters
+$cvs = getCVs($conn, $filters);
+?>
+
+
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Admin View CVs</title>
+    <title>Admin View</title>
 </head>
 <body>
-    <h1>Admin View CVs</h1>
+    <h1>Uploaded CVs</h1>
 
-    <?php
-// Assuming you have the database connection file included
-require_once('../../db_connection.php');
-session_start();
+    <!-- Filter Options -->
+    <form action="" method="get">
+        <label for="student_number">Filter by Student Number:</label>
+        <input type="text" name="student_number" id="student_number">
+        <label for="no_feedback">Show CVs with no existing feedback:</label>
+        <input type="checkbox" name="no_feedback" id="no_feedback" value="true">
+        <button type="submit">Apply Filters</button>
+        <a href="admin_view_cv.php">Reset Filters</a>
+    </form>
 
-// Function to send feedback
-function sendFeedback($conn, $cv_id, $student_number, $feedback) {
-    // Sanitize inputs to prevent SQL injection
-    $cv_id = mysqli_real_escape_string($conn, $cv_id);
-    $student_number = mysqli_real_escape_string($conn, $student_number);
-    $feedback = mysqli_real_escape_string($conn, $feedback);
+    <!-- Display feedback message box -->
+    <?php if (!empty($feedbackAlert)) { ?>
+        <div style="padding: 10px; background-color: #f0f0f0; border: 1px solid #ccc; margin-bottom: 10px;">
+            <?php echo $feedbackAlert; ?>
+        </div>
+    <?php } ?>
 
-    // Check if the cv_id already exists in cv_feedback for the given student_number
-    $existingFeedbackQuery = "SELECT COUNT(*) FROM cv_feedback WHERE cv_id = '$cv_id' AND student_number = '$student_number'";
-    $result = $conn->query($existingFeedbackQuery);
-    if ($result) {
-        $row = $result->fetch_row();
-        $existingFeedbackCount = $row[0];
-        if ($existingFeedbackCount > 0) {
-            // CV already has feedback, do not insert again
-            return false;
-        }
-    } else {
-        die('Error in checking existing feedback: ' . $conn->error);
-    }
-
-    // Prepare the feedback insertion into the database
-    $stmt = $conn->prepare("INSERT INTO cv_feedback (cv_id, student_number, feedback) VALUES (?, ?, ?)");
-    if (!$stmt) {
-        die('Error in preparing statement: ' . $conn->error);
-    }
-
-    // Bind parameters and execute the statement
-    $stmt->bind_param("sss", $cv_id, $student_number, $feedback);
-    if (!$stmt->execute()) {
-        die('Error in executing statement: ' . $stmt->error);
-    }
-
-    $stmt->close();
-
-    return true;
-}
-
-    // Check if the feedback form is submitted
-        if (isset($_POST['submit_feedback'])) {
-            $cv_id = $_POST['cv_id'];
-            $feedback = $_POST['feedback'];
-
-            // Fetch the student_number from the database based on the cv_id
-            $stmt = $conn->prepare("SELECT student_number FROM cvs WHERE cv_id = ?");
-            if (!$stmt) {
-                die('Error in preparing statement: ' . $conn->error);
-            }
-
-            $stmt->bind_param("s", $cv_id);
-            if (!$stmt->execute()) {
-                die('Error in executing statement: ' . $stmt->error);
-            }
-
-            $stmt->bind_result($student_number);
-            $stmt->fetch();
-            $stmt->close();
-
-            // Check if the student_number is available (whether the form was submitted with or without filter)
-            // If not available, fall back to the filter value (if the filter was applied)
-            if (empty($student_number) && isset($_SESSION['filterStudentNumber'])) {
-                $student_number = $_SESSION['filterStudentNumber'];
-            }
-
-            // Call the sendFeedback function and store the feedback status in a session variable
-            if (sendFeedback($conn, $cv_id, $student_number, $feedback)) {
-                $_SESSION['feedback_status'] = "Feedback Sent";
-            } else {
-                $_SESSION['feedback_status'] = "Feedback Already Available";
-            }
-
-            // Redirect back to the current page to prevent form resubmission on refresh
-            header("Location: admin_view_cv.php");
-            exit();
-        }
-
-        // Check if the form is submitted with a student_number filter
-        $filterStudentNumber = isset($_GET['student_number']) ? $_GET['student_number'] : '';
-
-        // Initialize the filterStudentNumber variable
-        if (!isset($_SESSION['filterStudentNumber'])) {
-            $_SESSION['filterStudentNumber'] = '';
-        }
-
-        // Save the filter in the session
-        $_SESSION['filterStudentNumber'] = $filterStudentNumber;
-
-        // Fetch CVs filtered by student_number (if filter applied) or fetch all CVs
-        $filterCondition = $filterStudentNumber ? "WHERE student_number = '$filterStudentNumber'" : "";
-        $result = $conn->query("SELECT * FROM cvs $filterCondition");
-        ?>
-
-        <form method="GET">
-            Filter by Student Number: <input type="text" name="student_number" value="<?php echo $_SESSION['filterStudentNumber']; ?>" />
-            <input type="submit" value="Filter" />
-            <?php if ($_SESSION['filterStudentNumber']) : ?>
-                <a href="admin_view_cv.php">Remove Filter</a>
-            <?php endif; ?>
-        </form>
-
-        <?php if ($result->num_rows > 0) : ?>
-            <ul>
-                <?php while ($row = $result->fetch_assoc()) : ?>
-                    <?php
-                    $cv_id = $row['cv_id'];
-                    $cvPath = $row['cv_path'];
-                    $fileName = basename($cvPath);
-                    ?>
-                    <li>
-                        <a href="<?php echo $cvPath; ?>" target="_blank"><?php echo $fileName; ?></a>
-                        <br>
-                        <form method="POST" action="admin_view_cv.php">
-                            <input type="hidden" name="cv_id" value="<?php echo $cv_id; ?>">
-                            <textarea name="feedback" placeholder="Enter feedback"></textarea>
-                            <input type="submit" name="submit_feedback" value="Send Feedback">
+    <!-- Display all CVs -->
+    <table>
+        <thead>
+            <tr>
+                <th>Student Number</th>
+                <th>CV Path</th>
+                <th>Existing Feedback</th>
+                <th>Feedback</th>
+            </tr>
+        </thead>
+        <tbody>
+            <?php foreach ($cvs as $cv) { ?>
+                <tr>
+                    <td><?php echo $cv['student_number']; ?></td>
+                    <td>
+                        <a href="<?php echo $cv['cv_path']; ?>" target="_blank">View CV</a>
+                    </td>
+                    <td><?php echo $cv['existing_feedback']; ?></td>
+                    <td>
+                        <!-- Form to provide feedback for each CV -->
+                        <form method="post">
+                            <input type="hidden" name="cv_id" value="<?php echo $cv['cv_id']; ?>">
+                            <textarea name="feedback" placeholder="Enter new feedback here"></textarea>
+                            <button type="submit" name="submit_feedback">Submit Feedback</button>
                         </form>
-                    </li>
-                <?php endwhile; ?>
-            </ul>
-        <?php else : ?>
-            <p>No CVs found.</p>
-        <?php endif; ?>
-
-        <script type="text/javascript">
-            // Display the feedback status message if set
-            <?php if (isset($_SESSION['feedback_status'])) : ?>
-                alert("<?php echo $_SESSION['feedback_status']; ?>");
-            <?php unset($_SESSION['feedback_status']); // Clear the message after displaying it ?>
-            <?php endif; ?>
-        </script>
-    </body>
-    </html>
+                    </td>
+                </tr>
+            <?php } ?>
+        </tbody>
+    </table>
+</body>
+</html>

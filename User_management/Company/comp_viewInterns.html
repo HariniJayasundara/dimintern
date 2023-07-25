@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<DOCTYPE html>
 <html>
 <head>
   <title>View interns</title>
@@ -65,7 +65,7 @@
   </footer>
 
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
- 
+
   <script>
   $(document).ready(function() {
     // Make an AJAX request to fetch student assignments
@@ -74,103 +74,9 @@
       type: 'POST',
       dataType: 'json',
       success: function(data) {
-        if (data.response_status === 'message') {
-          // Display a message box if students are selected by other companies
-          var selectedByOtherCompany = data.selectedByOtherCompany;
-          var message = "The following student(s) have been selected by another company:\n";
-          for (var i = 0; i < selectedByOtherCompany.length; i++) {
-            message += selectedByOtherCompany[i].student_number + " (Selected by: " + selectedByOtherCompany[i].selected_companyID + ")\n";
-          }
-          alert(message);
-
-          // Update the assignments list after displaying the message box
-          var assignments = data.assignments;
-          var statuses = data.statuses;
-          var assignmentsList = '';
-          for (var i = 0; i < assignments.length; i++) {
-            var studentNumber = assignments[i].student_number;
-            var preferenceId = assignments[i].preference_id;
-            var preferenceName = assignments[i].preference_name;
-            var currentStatus = assignments[i].current_status;
-
-            // Create a dropdown with status options
-            var statusOptions = '';
-            for (var statusId in statuses) {
-              statusOptions += '<option value="' + statusId + '"';
-              if (statusId === currentStatus) {
-                statusOptions += ' selected';
-              }
-              statusOptions += '>' + statuses[statusId] + '</option>';
-            }
-
-            // Construct the assignment card
-            assignmentsList += '<div class="assignment-card">';
-            assignmentsList += '<p class="student-number">Student Number: ' + studentNumber + '</p>';
-            assignmentsList += '<p>Preference ID: ' + preferenceId + '</p>';
-            assignmentsList += '<p>Preference Name: ' + preferenceName + '</p>';
-            assignmentsList += '<p>Current Status: ';
-            assignmentsList += '<select class="status-dropdown" data-student="' + studentNumber + '">' + statusOptions + '</select>';
-            assignmentsList += '</p>';
-            assignmentsList += '</div>';
-          }
-          $('#assignments-container').html(assignmentsList);
-        } else if (data.response_status === 'success') {
-
+        if (data.response_status === 'success') {
           // Display student assignments and status options on the page
-          var assignments = data.assignments;
-          var statuses = data.statuses;
-          var assignmentsList = '';
-          for (var i = 0; i < assignments.length; i++) {
-            var studentNumber = assignments[i].student_number;
-            var preferenceId = assignments[i].preference_id;
-            var preferenceName = assignments[i].preference_name;
-            var currentStatus = assignments[i].current_status;
-
-            // Create a dropdown with status options
-            var statusOptions = '';
-            for (var statusId in statuses) {
-              statusOptions += '<option value="' + statusId + '"';
-              if (statusId === currentStatus) {
-                statusOptions += ' selected';
-              }
-              statusOptions += '>' + statuses[statusId] + '</option>';
-            }
-
-            // Construct the assignment card
-            assignmentsList += '<div class="assignment-card">';
-            assignmentsList += '<p class="student-number">Student Number: ' + studentNumber + '</p>';
-            assignmentsList += '<p>Preference ID: ' + preferenceId + '</p>';
-            assignmentsList += '<p>Preference Name: ' + preferenceName + '</p>';
-            assignmentsList += '<p>Current Status: ';
-            assignmentsList += '<select class="status-dropdown" data-student="' + studentNumber + '">' + statusOptions + '</select>';
-            assignmentsList += '</p>';
-            assignmentsList += '</div>';
-          }
-          $('#assignments-container').html(assignmentsList);
-
-          // Attach event handler for status change
-          $('.status-dropdown').change(function() {
-            var studentNumber = $(this).data('student');
-            var newStatus = $(this).val();
-
-            // Make an AJAX request to update the current_status
-            $.ajax({
-              url: 'comp_updateStatus.php',
-              type: 'POST',
-              data: { student_number: studentNumber, new_status: newStatus },
-              dataType: 'json',
-              success: function(response) {
-                if (response.response_status === 'success') {
-                  alert('Status updated successfully!');
-                } else {
-                  alert('Error: ' + response.message);
-                }
-              },
-              error: function() {
-                alert('Error: Failed to update status.');
-              }
-            });
-          });
+          updateAssignments(data);
         } else {
           // Display error message if data retrieval fails
           $('#assignments-container').html('<p>Error: ' + data.message + '</p>');
@@ -180,8 +86,86 @@
         $('#assignments-container').html('<p>Error: Failed to fetch student assignments.</p>');
       }
     });
+
+    function updateAssignments(data) {
+      var assignments = data.assignments;
+      var statuses = data.statuses;
+      var assignmentsList = '';
+
+      for (var i = 0; i < assignments.length; i++) {
+        var studentNumber = assignments[i].student_number;
+        var preferenceId = assignments[i].preference_id;
+        var preferenceName = assignments[i].preference_name;
+        var currentStatus = assignments[i].current_status;
+
+        // Create a dropdown with status options
+        var statusOptions = '';
+        for (var statusId in statuses) {
+          statusOptions +=
+            '<option value="' +
+            statusId +
+            '"' +
+            (statusId === currentStatus ? ' selected' : '') +
+            '>' +
+            statuses[statusId] +
+            '</option>';
+        }
+
+        // Construct the assignment card
+        assignmentsList += '<div class="assignment-card">';
+        assignmentsList +=
+          '<p class="student-number">Student Number: ' +
+          studentNumber +
+          '</p>';
+        assignmentsList += '<p>Preference ID: ' + preferenceId + '</p>';
+        assignmentsList +=
+          '<p>Preference Name: ' + preferenceName + '</p>';
+        assignmentsList += '<p>Current Status: ';
+        // Add data-preference attribute to store the preference_id
+        assignmentsList +=
+          '<select class="status-dropdown" data-student="' +
+          studentNumber +
+          '" data-preference="' +
+          preferenceId +
+          '">' +
+          statusOptions +
+          '</select>';
+        assignmentsList += '</p>';
+        assignmentsList += '</div>';
+      }
+
+      $('#assignments-container').html(assignmentsList);
+
+      // Attach event handler for status change
+      $('.status-dropdown').change(function () {
+        var studentNumber = $(this).data('student');
+        var preferenceId = $(this).data('preference'); // Get the preference_id
+        var newStatus = $(this).val();
+
+        // Make an AJAX request to update the current_status
+        $.ajax({
+          url: 'comp_updateStatus.php',
+          type: 'POST',
+          data: {
+            student_number: studentNumber,
+            new_status: newStatus,
+            preference_id: preferenceId, // Include the preference_id in the request
+          },
+          dataType: 'json',
+          success: function (response) {
+            if (response.response_status === 'success') {
+              alert('Status updated successfully!');
+            } else {
+              alert('Error: ' + response.message);
+            }
+          },
+          error: function () {
+            alert('Error: Failed to update status.');
+          },
+        });
+      });
+    }
   });
 </script>
-
 </body>
 </html>

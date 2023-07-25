@@ -54,13 +54,23 @@
                 // Sanitize the file name to prevent potential security issues
                 $fileName = basename($file['name']);
 
-                // Set the destination directory to store CVs
-                $destination = $_SERVER['DOCUMENT_ROOT'] . '/cv_uploads/' . $fileName;
+                // Set the destination directory to store CVs using a relative URL
+                $destination = '/cv_uploads/' . $fileName;
 
-                
+                // Check if the student_number is already present in the CVs table
+                $stmt = $conn->prepare("SELECT COUNT(*) AS count FROM cvs WHERE student_number = ?");
+                $stmt->bind_param("s", $student_number);
+                $stmt->execute();
+                $result = $stmt->get_result();
+
+                $row = $result->fetch_assoc();
+                if ($row['count'] > 0) {
+                    echo 'You have already uploaded your CV.';
+                    exit; // Stop further execution if the student_number already exists in the CVs table
+                }
 
                 // Move the uploaded file to the destination directory
-                if (move_uploaded_file($file['tmp_name'], $destination)) {
+                if (move_uploaded_file($file['tmp_name'], $_SERVER['DOCUMENT_ROOT'] . $destination)) {
                     // File uploaded successfully
                     echo 'CV uploaded successfully.';
 
@@ -74,8 +84,6 @@
                     // Use prepared statements to prevent SQL injection
                     $stmt = $conn->prepare("INSERT INTO cvs (student_number, cv_path) VALUES (?, ?)");
                     $stmt->bind_param("ss", $student_number, $cvPath); // Use "ss" for two string parameters
-
-
 
                     if ($stmt->execute()) {
                         echo 'CV information recorded in the database.';

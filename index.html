@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Welcome to DIMIntern</title>
+    <link rel="stylesheet" type="text/css" href="styles.css">
+
+</head>
+<body>
+    <header>
+        <div class="header-logo"><img src="Images/logo.png" alt="DIM Logo"></div>
+        <div class="header-title">Internship Handling Platform</div>
+        <div class="header-options">
+            <a href="login.html">Login</a>
+            <a href="#registration" onclick="showRegistrationOptions()">Register</a>
+        </div>
+    </header>
+
+    <h1>Welcome to DIMIntern</h1>
+    <p>Please select an option:</p>
+    <a href="login.html">Login</a>
+    <a href="#registration" onclick="showRegistrationOptions()">Register</a>
+    
+    <div class=home-img><img src="Images/home.png" alt="homepage"></div>
+
+
+    <div id="registration"></div>
+
+    <script>
+        function showRegistrationOptions() {
+            const registrationOptions = document.getElementById('registration');
+            registrationOptions.innerHTML = `
+                <p>Select your role:</p>
+                <a href="User_management/Student/create_account.html">Student</a>
+                <a href="User_management/Company/create_account.html">Company</a>
+                <a href="Admin/create_account.html">DIM Staff</a>
+
+            `;
+        }
+    </script>
+
+    <footer>
+        <div class="footer-content">
+            Department of Industrial Management - Faculty of Science - University of Kelaniya
+        </div>
+    </footer>
+</body>
+</html>
