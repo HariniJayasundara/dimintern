@@ -1,0 +1,229 @@
+<?php
+session_start();
+if (isset($_SESSION['preferred_name'])) {
+    $preferred_name = $_SESSION['preferred_name'];
+} else {
+    // Retrieve the preferred_name from the student table based on the logged-in email
+    require_once('../../db_connection.php');
+
+    if (isset($_SESSION['email'])) {
+        $email = $_SESSION['email'];
+
+        $sql = "SELECT preferred_name FROM student WHERE email = '$email'";
+        $result = $conn->query($sql);
+
+        if ($result->num_rows > 0) {
+            $row = $result->fetch_assoc();
+            $preferred_name = $row['preferred_name'];
+        } else {
+            $preferred_name = "Unknown";
+        }
+    } else {
+        $preferred_name = "Unknown";
+    }
+}
+?>
+
+<?php
+// Enable error reporting
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
+
+// Database connection file
+//require_once('../../db_connection.php');
+
+// Check if the form is submitted
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    // Check if preferences are selected
+    if (isset($_POST['preferences']) && is_array($_POST['preferences']) && count($_POST['preferences']) >= 3 && count($_POST['preferences']) <= 5) {
+        // Assuming the email is stored in $_SESSION['email']
+        if (isset($_SESSION['email'])) {
+            $email = $_SESSION['email'];
+
+            // Fetch the student number based on the email
+            $studentQuery = "SELECT student_number FROM student WHERE email = '$email'";
+            $studentResult = $conn->query($studentQuery);
+
+            if ($studentResult && $studentResult->num_rows > 0) {
+                $studentRow = $studentResult->fetch_assoc();
+                $student_number = $studentRow['student_number'];
+
+                // Delete existing preferences for the student
+                $deleteSql = "DELETE FROM stu_preference WHERE student_number = '$student_number'";
+                if ($conn->query($deleteSql) === TRUE) {
+                    // Insert new preferences for the student
+                    $insertSql = "INSERT INTO stu_preference (student_number, preference_id) VALUES ";
+                    $values = array();
+                    foreach ($_POST['preferences'] as $preference) {
+                        $values[] = "('$student_number', '$preference')";
+                    }
+                    $insertSql .= implode(", ", $values);
+
+                    if ($conn->query($insertSql) === TRUE) {
+                        echo "Preferences updated successfully.";
+                    } else {
+                        echo "Error updating preferences: " . $conn->error;
+                    }
+                } else {
+                    echo "Error deleting existing preferences: " . $conn->error;
+                }
+            } else {
+                echo "Error fetching student information: " . $conn->error;
+            }
+        } else {
+            echo "Email not found in session data.";
+        }
+    } else {
+        echo "Please select a minimum of 3 and a maximum of 5 preferences.";
+    }
+
+} else {
+    // Fetch all preferences
+    $sql = "SELECT preference_id, preference_name FROM preferences";
+    $result = $conn->query($sql);
+
+    if ($result) {
+        // Fetch the student number based on the email
+        if (isset($_SESSION['email'])) {
+            $email = $_SESSION['email'];
+
+            $studentQuery = "SELECT student_number FROM student WHERE email = '$email'";
+            $studentResult = $conn->query($studentQuery);
+
+            if ($studentResult && $studentResult->num_rows > 0) {
+                $studentRow = $studentResult->fetch_assoc();
+                $student_number = $studentRow['student_number'];
+
+                // Retrieve the student's previous preferences
+                $previousPreferencesQuery = "SELECT preference_id FROM stu_preference WHERE student_number = '$student_number'";
+                $previousPreferencesResult = $conn->query($previousPreferencesQuery);
+
+                // Create an array to store the student's previous preferences
+                $previousPreferences = array();
+                while ($row = $previousPreferencesResult->fetch_assoc()) {
+                    $previousPreferences[] = $row['preference_id'];
+                }
+            }
+        }
+        ?>
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Student Portal - Preferences</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+
+    <style type="text/css">  
+    body {
+            background-color: #f2f2f2;
+    }
+
+    .card {
+        background-color: #ffffff;
+        padding: 20px;
+        border-radius: 5px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        margin: 20px 0;
+    }
+
+.btn {
+    padding: 10px 20px;
+    background-color: #51b4af;
+    border: none;
+    color: white;
+    font-size: 16px;
+    border-radius: 5px;
+    cursor: pointer;
+        }
+
+h2{
+    font-size: 16px;
+}
+
+footer {
+  background-color: #03a68d;
+  color: white;
+  text-align: center;
+  padding: 20px;
+  margin: 0px;
+  width: 100%;
+  position: fixed;
+  bottom: 0;
+}
+
+.footer-content {
+  font-size: 14px;
+} 
+    </style>
+</head>
+<body>
+    <!-- Add navigation bar (same as the previous code) -->
+    <nav class="navbar navbar-expand-lg navbar-dark" style="background-color: #51b4af;">
+        <div class="container">
+            <a class="navbar-brand" href="student_dashboard.php">
+                <img src="../../Images/logo.png" alt="Logo" height="35"> Home
+            </a>
+            <ul class="navbar-nav me-auto">
+                <li class="nav-item">Welcome, <?php echo $preferred_name; ?></li>
+            </ul>
+            <ul class="navbar-nav">
+                <li class="nav-item">
+                    <a class="nav-link" href="logout.php">Logout</a>
+                </li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="container mt-5">
+    <h1>Select Preferences</h1>
+    <h2>(Previously selected preferences are pre-selected)</h2>
+
+    <form action="stu_preference.php" method="POST">
+    <?php
+        while ($row = $result->fetch_assoc()) {
+            $preferenceId = $row['preference_id'];
+            $preferenceName = $row['preference_name'];
+
+    ?>
+    <div class="form-check">
+          <input class="form-check-input" type="checkbox" name="preferences[]" value="<?php echo $preferenceId; ?>" <?php if (isset($previousPreferences) && in_array($preferenceId, $previousPreferences)) echo 'checked'; ?>>
+          <label class="form-check-label">
+
+<!--             
+        <label>
+            <input type="checkbox" name="preferences[]" value="<?php echo $preferenceId; ?>" <?php if (isset($previousPreferences) && in_array($preferenceId, $previousPreferences)) echo 'checked'; ?>> -->
+            <?php echo $preferenceName; ?>
+          </label>
+    </div>
+    <?php
+        }
+    ?>
+    <br>
+    <button type="submit" class="btn">Submit</button>
+    </form>
+  </div>
+
+  <footer>
+        <div class="footer-content">
+            Department of Industrial Management - Faculty of Science - University of Kelaniya
+        </div>
+    </footer>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.25.0/dist/js/bootstrap-icons.min.js"></script>
+    <script src="https://kit.fontawesome.com/your-font-awesome-kit.js" crossorigin="anonymous"></script>
+
+</body>
+</html>
+
+
+<?php
+} else {
+    echo "Error fetching preferences: " . $conn->error;
+        }
+}
+
+// Close the database connection
+$conn->close();
+?>

@@ -1,9 +1,22 @@
 <?php
 session_start();
-if (isset($_SESSION['preferred_name'])) {
-    $preferred_name = $_SESSION['preferred_name'];
+if (isset($_SESSION['email'])) {
+    // Retrieve the preferred_name from the student table based on the logged-in email
+    require_once('../../db_connection.php');
+
+    $email = $_SESSION['email'];
+
+    $sql = "SELECT preferred_name FROM student WHERE email = '$email'";
+    $result = $conn->query($sql);
+
+    if ($result && $result->num_rows > 0) {
+        $row = $result->fetch_assoc();
+        $preferred_name = $row['preferred_name'];
+    } else {
+        $preferred_name = "Unknown";
+    }
 } else {
-    // Handle the case when the preferred name is not set
+    // If $_SESSION['email'] is not set (user not logged in), set preferred_name to "Unknown"
     $preferred_name = "Unknown";
 }
 ?>
@@ -12,195 +25,155 @@ if (isset($_SESSION['preferred_name'])) {
 <html>
 <head>
     <title>Student Dashboard</title>
-    <!-- Include your CSS stylesheet here -->
-    <style type="text/css">
-      
-        
-body {
-  font-family: Arial, sans-serif;
-  background-color: #f2f2f2;
-  margin: 0;
-  padding: 0;
-  display: flex;
-  flex-direction: column;
-  min-height: 100vh;
-}
+    <!-- Include Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <!-- Additional custom CSS -->
+    <style>
+        body {
+            background-color: #f2f2f2;
+        }
 
-.container {
-  max-width: 500px;
-  margin: 0 auto;
-  background-color: #ffffff;
-  padding: 20px;
-  border-radius: 5px;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        .dashboard-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+            justify-items: center;
+        }
 
-}
+        .card {
+            background-color: #ffffff;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            margin: 20px 0;
+        }
 
-h2 {
-  text-align: center;
-  margin-bottom: 20px;
-}
+        .card-title {
+          align-self: center;
+        }
 
-.form-group {
-  margin-bottom: 20px;
-}
+        .card-text {
+          align-self: center;
+        }
 
-label {
-  display: block;
-  margin-bottom: 5px;
-  font-weight: bold;
-}
+        .btn {
+        padding: 10px 20px;
+        background-color: #51b4af;
+        border: none;
+        color: white;
+        font-size: 16px;
+        border-radius: 5px;
+        cursor: pointer;
+        }
 
-input[type="text"],
-input[type="number"],
-select,
-textarea {
-  width: 100%;
-  padding: 10px;
-  border-radius: 5px;
-  border: 1px solid #ccc;
-  box-sizing: border-box;
-  font-size: 14px;
-}
+        footer {
+            background-color: #03a68d;
+            color: white;
+            text-align: center;
+            padding: 20px;
+            margin: 0px;
+            width: 100%;
+            position: fixed;
+            bottom: 0;
+        }
 
-textarea {
-  height: 80px;
-}
+        .footer-content {
+            font-size: 14px;
+        }
 
-button[type="submit"] {
-  padding: 10px 20px;
-  background-color: #4CAF50;
-  border: none;
-  color: white;
-  font-size: 16px;
-  border-radius: 5px;
-  cursor: pointer;
-}
+        @media (max-width: 768px) {
+            .dashboard-cards {
+                grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            }
+        }
 
-button[type="submit"]:hover {
-  background-color: #45a049;
-}
+        @media (min-width: 768px) and (max-width: 992px) {
+            .dashboard-cards {
+                grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            }
+        }
 
-nav {
-  background-color: #333;
-  color: #fff;
-  padding: 10px;
-}
+        @media (min-width: 992px) and (max-width: 1200px) {
+            .dashboard-cards {
+                grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            }
+        }
 
-nav ul {
-  list-style-type: none;
-  margin: 0;
-  padding: 0;
-  display: flex;
-  justify-content: flex-end;
-}
-
-nav ul li {
-  margin-left: 10px;
-}
-
-.dashboard-cards {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 20px;
-}
-
-.card {
-  background-color: #f9f9f9;
-  padding: 20px;
-  border-radius: 5px;
-  box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
-}
-
-.card h2 {
-  margin-bottom: 10px;
-}
-
-.card p {
-  margin-bottom: 10px;
-}
-
-.card a {
-  display: inline-block;
-  padding: 8px 16px;
-  background-color: #4CAF50;
-  color: #fff;
-  text-decoration: none;
-  border-radius: 5px;
-  transition: background-color 0.3s;
-}
-
-.card a:hover {
-  background-color: #45a049;
-}
-
-footer {
-  background-color: #03a68d;
-  color: white;
-  text-align: center;
-  padding: 20px;
-  margin: 0px;
-  width: 100%;
-  position: fixed;
-  bottom: 0;
-}
-
-.footer-content {
-  font-size: 14px;
-}
-
+        .nav-item {
+          color: black;
+        }
     </style>
-    
 </head>
 
 <body>
     <!-- Add navigation bar -->
-    <nav>
-        <ul>
-            <li>Welcome, <?php echo $preferred_name; ?></li>
-            <li><a href="logout.php">Logout</a></li>
-        </ul>
+    <nav class="navbar navbar-expand-lg navbar-dark" style="background-color: #51b4af;">
+        <div class="container">
+            <a class="navbar-brand" href="student_dashboard.php">
+                <img src="../../Images/logo.png" alt="Logo" height="35"> Home
+            </a>
+            <ul class="navbar-nav me-auto">
+                <li class="nav-item">Welcome, <?php echo $preferred_name; ?></li>
+            </ul>
+            <ul class="navbar-nav">
+                <li class="nav-item">
+                    <a class="nav-link" href="../../logout.php">Logout</a>
+                </li>
+            </ul>
+        </div>
     </nav>
 
-    <!-- Add Cards -->
-    <div class="dashboard-cards">
-        <div class="card">
-            <h2>CV</h2>
-            <p>Upload your CV here.</p>
-            <a href="upload_cv.php">Upload</a>
+    <!-- Add Cards using Bootstrap cards -->
+    <div class="container mt-5">
+        <div class="row">
+            <div class="col-md-4">
+                <div class="card">
+                    <h2 class="card-title">CV</h2>
+                    <p class="card-text">Upload your CV here.</p>
+                    <a href="upload_cv.php" class="btn">Upload</a>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card">
+                    <h2 class="card-title">Internship Status</h2>
+                    <p class="card-text">View your current allocation status.</p>
+                    <a href="stu_status.php" class="btn">View</a>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card">
+                    <h2 class="card-title">Preferences</h2>
+                    <p class="card-text">Add your preferred intern positions here.</p>
+                    <a href="stu_preference.php" class="btn">Add</a>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card">
+                    <h2 class="card-title">Reports</h2>
+                    <p class="card-text">Upload your reports here.</p>
+                    <a href="upload_reports.php" class="btn">Upload</a>
+                </div>
+            </div>
+            <div class="col-md-4 mb-5">
+                <div class="card">
+                    <h2 class="card-title">Feedback</h2>
+                    <p class="card-text">View feedback for uploaded documents here.</p>
+                    <a href="stu_feedback.php" class="btn">View</a>
+                </div>
+            </div>
         </div>
-
-        <div class="card">
-            <h2>Internship Status</h2>
-            <p>View current allocation status.</p>
-            <a href="stu_status.html">View</a>
-        </div>
-
-        <div class="card">
-            <h2>Preferences</h2>
-            <p>Add your preferred intern positions here.</p>
-            <a href="stu_preference.php">Add</a>
-        </div>
-
-        <div class="card">
-            <h2>Reports</h2>
-            <p>Upload your reports here.</p>
-            <a href="upload_reports.php">Upload</a>
-        </div>
-
-        <div class="card">
-            <h2>Feedback</h2>
-            <p>View feedback for uploaded documents here.</p>
-            <a href="stu_feedback.php">View</a>
-        </div>
-
     </div>
 
     <footer>
-      <div class="footer-content">
-        Department of Industrial Management - Faculty of Science - University of Kelaniya
-      </div>
+        <div class="footer-content">
+            Department of Industrial Management - Faculty of Science - University of Kelaniya
+        </div>
     </footer>
 
+    <!-- Include Bootstrap JS and Font Awesome -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.25.0/dist/js/bootstrap-icons.min.js"></script>
+    <script src="https://kit.fontawesome.com/your-font-awesome-kit.js" crossorigin="anonymous"></script>
 </body>
 </html>

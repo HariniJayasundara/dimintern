@@ -79,7 +79,7 @@ $stmt->bind_param("ssssssssssss", $student_number, $name_with_initials, $preferr
 
 if ($stmt->execute()) {
     // Redirect to the student's landing page
-    header("Location: student_dashboard.php");
+    header("Location: ../../login.html");
     // Set the preferred name in the session
     session_start();
     $_SESSION['preferred_name'] = $preferred_name;

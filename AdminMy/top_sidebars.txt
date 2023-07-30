@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <link rel="stylesheet" href="https://pro.fontawesome.com/releases/v5.10.0/css/all.css" integrity="sha384-AYmEC3Yw5cVb3ZcuHtOA93w35dYTsvhLPVnYs9eStHfGJvOvKxVfELGroGkvsg+p" crossorigin="anonymous" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    <link rel="stylesheet" href="styles.css">
+
+    <title>Admin panel</title>
+</head>
+
+<body>
+    <div class="container">
+        <div class="topbar">
+            <div class="logo">
+                <h2>DIM Admin</h2>
+            </div>
+        </div>
+                <div class="sidebar">
+            <ul>
+                <li>
+                    <a href="index.php">
+                        <i class="fas fa-th-large"></i>
+                        <div>Dashboard</div>
+                    </a>
+                </li>
+                <li>
+                    <a href="Manage Students/manage_students.html">
+                        <i class="fas fa-user-graduate"></i>
+                        <div>Students</div>
+                    </a>
+                </li>
+                <li>
+                    <a href="Manage Companies/manage_companies.php">
+                        <i class="fas fa-user-tie" ></i>
+                        <div>Companies</div>
+                    </a>
+                </li>
+                <li>
+                    <a href="Manage Admin/admin.php">
+                        <i class="fas fa-users"></i>
+                        <div>DIM Staff</div>
+                    </a>
+                </li>
+                <li>
+                    <a href="Manage Preferences/map_preferences.html">
+                        <i class="fas fa-hand-sparkles"></i>
+                        <div>Preferences</div>
+                    </a>
+                </li>
+                <li>
+                    <a href="Manage Internships/admin_manageAssignments.html">
+                        <i class="fas fa-clipboard-check"></i>
+                        <div>Allocations</div>
+                    </a>
+                </li>
+                <li>
+                    <a>
+                        <i class="fas fa-file-signature"></i>
+                        <div>Documentation</div>
+                    </a>
+                    <ul>
+                    <li>
+                        <a href="Manage CVs/admin_view_cv">
+                            <i class="far fa-file-alt"></i>
+                            <div>CV</div>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="Manage Reports/admin_internReports.php">
+                            <i class="far fa-file-alt"></i>
+                            <div>User Reports</div>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#">
+                            <i class="far fa-file-alt"></i>
+                            <div>Admin Uploads</div>
+                    </a>
+                    </li>
+                    </ul>
+                    </li>
+            </ul>
+            <div class="logout-option">
+                <a href="../logout.php">
+                    <i class="fas fa-sign-out-alt"></i>
+                    <div>Logout</div>
+            </div>
+        </div>
+ <!-- End of top bar and sidebar        -->
+
+
+
+
+
+
+
+
+
+
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.5.1/dist/chart.min.js"></script>
+    <script src="chart1.js"></script>
+    <script src="chart2.js"></script>
+</body>
+
+</html>

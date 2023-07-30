@@ -1,0 +1,284 @@
+* {
+    padding: 0;
+    margin: 0;
+    box-sizing: border-box;
+    font-family: 'poppins', sans-serif;
+}
+
+.topbar {
+    position: fixed;
+    background-color: #fff;
+    box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.08);
+    width: 100%;
+    padding: 0 20px;
+    height: 60px;
+    display: grid;
+    grid-template-columns: 2fr 10fr 0.4fr 1fr;
+    align-items: center;
+    z-index: 1;
+}
+
+
+.logo h2 {
+    color: #343a40;
+}
+
+
+/* sidebar */
+
+.sidebar {
+    position: fixed;
+    top: 60px;
+    width: 260px;
+    height: calc(100% - 60px);
+    background: #51b4af;
+    overflow-x: hidden;
+    box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2);
+    z-index: 2;
+}
+
+.sidebar ul {
+    margin-top: 20px;
+}
+
+.sidebar ul li {
+    width: 100%;
+    list-style: none;
+}
+
+.sidebar ul li:hover {
+    background: #fff;
+}
+
+.sidebar ul li:hover a {
+    color: #343a40;
+}
+
+.sidebar ul li a {
+    width: 100%;
+    text-decoration: none;
+    color: #fff;
+    height: 60px;
+    display: flex;
+    align-items: center;
+}
+
+.sidebar ul li a i {
+    min-width: 60px;
+    font-size: 24px;
+    text-align: center;
+}
+
+.sidebar ul li.active {
+    background: #fff;
+}
+
+.sidebar ul li.active a {
+    color: #000;
+}
+
+/* Existing CSS for the sidebar and main items */
+
+.sidebar ul li ul {
+    /* Style for the sub-sections (nested <ul> elements) */
+    margin-top: 10px; /* Adjust the spacing between the sub-sections */
+    padding-left: 20px; /* Indent the sub-sections to create a visual hierarchy */
+    display: none;
+}
+
+.sidebar ul li:hover ul{
+    display: block;
+}
+
+.sidebar ul li ul li {
+    /* Style for each sub-section item */
+    height: 40px; /* Reduce the height of the sub-section items */
+}
+
+.sidebar ul li ul li:hover{
+    background-color: #51b4af;
+}
+
+.sidebar ul li ul li a {
+    /* Style for the sub-section links */
+    font-size: 18px; /* Reduce the font size of the sub-section links */
+}
+
+.sidebar ul li ul li a i {
+    /* Style for the icons in the sub-sections */
+    font-size: 16px; /* Reduce the font size of the icons in the sub-sections */
+}
+
+.logout-option {
+    margin-top: auto; /* Push the logout option to the bottom */
+    border-top: 1px solid #ddd;
+}
+
+.logout-option a {
+    width: 100%;
+    text-decoration: none;
+    color: #fff;
+    height: 60px;
+    display: flex;
+    align-items: center;
+}
+
+.logout-option a:hover {
+    background: #fff;
+    color: #343a40;
+}
+
+.logout-option a i {
+    min-width: 60px;
+    font-size: 24px;
+    text-align: center;
+}
+
+.mainstudent {
+    margin-top: 20px; /* Adjust the margin to create space below the topbar */
+    padding: 20px; /* Add padding to create space between the content and the white card */
+}
+
+/* Add styles to the table to make it look like a white card */
+#student-table {
+    font-family: 'Poppins', sans-serif;
+    border-collapse: collapse;
+    width: 100%;
+    background-color: #fff;
+    border-radius: 10px; /* Add rounded corners to the table */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Add a subtle box shadow for depth */
+}
+
+/* Style for the table header */
+#student-table th {
+    background-color: #f2f2f2;
+    color: #333;
+    font-weight: bold;
+    padding: 12px;
+    text-align: left;
+}
+
+/* Style for the table body rows */
+#student-table tbody tr {
+    border-bottom: 1px solid #ddd;
+}
+
+/* Alternate row background color for better readability */
+#student-table tbody tr:nth-child(even) {
+    background-color: #f9f9f9;
+}
+
+/* Style for table cell content */
+#student-table td {
+    padding: 10px 12px;
+}
+
+/* Adjust the buttons in the action column */
+#student-table td:last-child {
+    text-align: center;
+    padding-right: 100px; /* Add padding to the right side of the cell */
+}
+
+/* Style for the edit and delete buttons */
+#student-table button {
+    margin: 5px; /* Add some space between the buttons */
+    padding: 5px 10px;
+    color: #fff;
+    border: none;
+    cursor: pointer;
+    transition: background-color 0.3s ease-in-out;
+    border-radius: 5px; /* Add rounded corners to the buttons */
+}
+
+/* Edit button styles */
+#student-table button.edit {
+    background-color: #03a68d;
+}
+
+#student-table button.edit:hover {
+    background-color: #028672;
+}
+
+/* Delete button styles */
+#student-table button.delete {
+    background-color: #b45156;
+}
+
+#student-table button.delete:hover {
+    background-color: #953b42;
+}
+
+
+
+.main {
+    position: absolute;
+    top: 60px;
+    width: calc(100% - 260px);
+    min-height: calc(100vh - 60px);
+    left: 260px;
+    background: #343a40;
+}
+
+@media (max-width:1115px) {
+    .sidebar {
+        width: 60px;
+    }
+    .main {
+        width: calc(100% - 60px);
+        left: 60px;
+    }
+}
+
+@media (max-width:880px) {
+     .topbar {
+        grid-template-columns: 1.6fr 6fr 0.4fr 1fr;
+    }
+
+    .cards {
+        width: 100%;
+        padding: 35px 20px;
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        grid-gap: 20px;
+    }
+    .charts {
+        grid-template-columns: 1fr;
+    }
+    .doughnut-chart {
+        padding: 50px;
+    }
+    #doughnut {
+        padding: 50px;
+    }
+}
+
+@media (max-width:500px) {
+    .topbar {
+        grid-template-columns: 1fr 5fr 0.4fr 1fr;
+    }
+    .logo h2 {
+        font-size: 20px;
+    }
+    .search {
+        width: 80%;
+    }
+    .search input {
+        padding: 0 20px;
+    }
+    .fa-bell {
+        margin-right: 5px;
+    }
+    .cards {
+        grid-template-columns: 1fr;
+    }
+    .doughnut-chart {
+        padding: 10px;
+    }
+    #doughnut {
+        padding: 0px;
+    }
+    .user {
+        width: 40px;
+        height: 40px;
+    }
+}

@@ -15,9 +15,7 @@ if ($role === 'company') {
     $table = 'student';
 } elseif ($role === 'admin') {
     $table = 'admin';
-} elseif ($role === 'staff') {
-    $table = 'staff';
-}
+} 
 
 // Prepare the SQL statement
 $stmt = $conn->prepare("SELECT email, password FROM $table WHERE email = ? LIMIT 1");
@@ -37,10 +35,11 @@ if ($stmt->num_rows == 1) {
 
     // Verify the password
     if (password_verify($password, $dbPassword)) {
-        // Password is correct, store the email in the session
+        // Password is correct, store the email and role in the session
         $_SESSION['email'] = $dbEmail;
+        $_SESSION['role'] = $role; // Set the user's role
 
-        //Redirect user to their landing page
+        // Redirect user to their landing page
         switch ($role) {
             case 'company':
                 header("Location: User_management/Company/company_dashboard.php");
@@ -49,13 +48,10 @@ if ($stmt->num_rows == 1) {
                 header("Location: User_management/Student/student_dashboard.php");
                 break;
             case 'admin':
-                header("Location: admin_dashboard.php");
-                break;
-            case 'staff':
-                header("Location: staff_dashboard.php");
+                header("Location: AdminMy/index.php");
                 break;
             default:
-                // Invalid role, handle accordingly
+                // Invalid role
                 break;
         }
     } else {
